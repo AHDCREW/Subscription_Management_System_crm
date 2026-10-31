@@ -22,6 +22,7 @@ import { InvoiceStatusBadge, OverdueBadge } from "@/app/dashboard/invoices/statu
 import { taxLabel } from "@/app/dashboard/subscriptions/data";
 import { customerSubscriptionsWhere, showsNextBill } from "../data";
 import { ManageSubscription } from "./manage-subscription";
+import { Addons } from "./addons";
 
 function parseId(raw: string) {
   const id = Number(raw);
@@ -62,6 +63,7 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
         orderBy: { id: "asc" },
         select: {
           id: true,
+          productId: true,
           quantity: true,
           unitPrice: true,
           product: { select: { name: true } },
@@ -79,6 +81,16 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
   });
   if (!sub) notFound();
 
+  // Add-ons can be switched on and off while the subscription is running.
+  const managesAddons = sub.status === "ACTIVE" || sub.status === "PAUSED";
+  const addonProducts = managesAddons
+    ? await db.product.findMany({
+        where: { type: "ADDON", active: true },
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        select: { id: true, name: true, salesPrice: true, tax: { select: { name: true, rate: true } } },
+      })
+    : [];
+
   const unit = PERIOD_UNIT[sub.plan.billingPeriod];
   const lines = sub.lines.map((line) => {
     const priced = { quantity: line.quantity, unitPrice: line.unitPrice, taxRate: line.tax?.rate };
@@ -89,6 +101,14 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
     sub.lines.map((line) => ({ quantity: line.quantity, unitPrice: line.unitPrice, taxRate: line.tax?.rate })),
   );
   const now = new Date();
+  const productIdsOnSub = new Set(sub.lines.map((line) => line.productId));
+  const addons = addonProducts.map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: `${formatMoney(product.salesPrice)} / ${unit}`,
+    tax: product.tax ? taxLabel(product.tax) : null,
+    on: productIdsOnSub.has(product.id),
+  }));
 
   return (
     <>
@@ -136,6 +156,8 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
         expiryDate={formatDay(sub.expiryDate)}
         defaultRenewalTerm={defaultRenewalTerm(sub.plan.billingPeriod)}
       />
+
+      {addons.length > 0 && <Addons subscriptionId={sub.id} addons={addons} />}
 
       <Table>
         <thead>
