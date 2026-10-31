@@ -1,5 +1,5 @@
 import type { ProductType } from "@prisma/client";
-import type { BadgeTone } from "@/components/ui";
+import type { BadgeTone } from "@/components/kit";
 
 // Client-safe product labels (no zod / server code), used by lists, badges and forms.
 

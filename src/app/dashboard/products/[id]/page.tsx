@@ -4,7 +4,7 @@ import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDate, formatMoney, toNumber } from "@/lib/money";
 import { productTypeInfo } from "@/lib/catalog/product-types";
-import { Badge, Button, ButtonLink, Card, PageHeader, Table, Td, Th } from "@/components/ui";
+import { Badge, Button, ButtonLink, Card, PageHeader, Table, Td, Th } from "@/components/kit";
 import { setProductActive } from "../actions";
 import { ProductForm } from "../product-form";
 import { taxLabel, taxOptions } from "../tax-options";

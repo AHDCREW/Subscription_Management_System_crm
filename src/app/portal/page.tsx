@@ -1,5 +1,5 @@
 import { requireCustomer } from "@/lib/auth";
-import { Card, PageHeader } from "@/components/ui";
+import { Card, PageHeader } from "@/components/kit";
 
 export default async function PortalHome() {
   const user = await requireCustomer();

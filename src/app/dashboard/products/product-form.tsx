@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { saveProduct } from "./actions";
 import { PRODUCT_TYPES } from "@/lib/catalog/product-types";
 import type { ProductFormValues } from "@/lib/catalog/products";
-import { Alert, Button, ButtonLink, Card, Checkbox, Field, Input, Select, Textarea } from "@/components/ui";
+import { Alert, Button, ButtonLink, Card, Checkbox, Field, Input, Select, Textarea } from "@/components/kit";
 
 export type TaxOption = { id: number; label: string };
 

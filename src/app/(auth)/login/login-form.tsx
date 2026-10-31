@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { login } from "../actions";
-import { Alert, Button, Card, Field, Input } from "@/components/ui";
+import { Alert, Button, Card, Field, Input } from "@/components/kit";
 
 export function LoginForm() {
   const [state, action, pending] = useActionState(login, undefined);

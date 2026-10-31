@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/money";
-import { Alert, Card, PageHeader } from "@/components/ui";
+import { Alert, Card, PageHeader } from "@/components/kit";
 import { getTemplateFormOptions } from "../data";
 import { DeleteTemplateButton } from "../delete-template-button";
 import { TemplateForm } from "../template-form";

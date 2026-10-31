@@ -1,11 +1,27 @@
+import { Brand } from "@/components/brand";
+import BlurText from "@/components/reactbits/BlurText";
+import { FadeIn } from "@/components/motion";
+
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
-      <div className="mb-8 text-center">
-        <p className="text-3xl font-bold tracking-tight text-indigo-600">SubFlow</p>
-        <p className="mt-1 text-sm text-slate-500">Subscriptions and recurring billing in one place</p>
+    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-12">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,color-mix(in_oklch,var(--primary)_14%,transparent),transparent)]"
+      />
+      <div className="mb-8 flex flex-col items-center gap-3 text-center">
+        <Brand className="animate-in fade-in zoom-in-95 duration-500" />
+        <BlurText
+          text="Subscriptions and recurring billing in one place"
+          className="justify-center text-sm text-muted-foreground"
+          trigger="load"
+          stepDuration={0.2}
+          distance={10}
+        />
       </div>
-      <div className="w-full max-w-sm">{children}</div>
+      <FadeIn delay={0.15} className="w-full max-w-sm">
+        {children}
+      </FadeIn>
     </main>
   );
 }
