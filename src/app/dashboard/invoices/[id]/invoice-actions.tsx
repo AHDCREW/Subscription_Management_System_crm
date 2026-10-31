@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CheckCircle2, Loader2, Printer, Send, XCircle } from "lucide-react";
+import { BellRing, CheckCircle2, Loader2, MailCheck, Printer, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import type { InvoiceStatus } from "@prisma/client";
 import { Button, ButtonLink, Card } from "@/components/kit";
@@ -14,7 +14,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cancelInvoice, confirmInvoice, type InvoiceActionResult } from "../actions";
+import {
+  cancelInvoice,
+  confirmInvoice,
+  sendInvoiceReminder,
+  sendInvoiceToCustomer,
+  type InvoiceActionResult,
+} from "../actions";
 import { RecordPaymentDialog } from "./record-payment-dialog";
 
 const HINT: Record<InvoiceStatus, string> = {
@@ -32,6 +38,8 @@ export function InvoiceActions({
   canCancel,
   hasPayments,
   payment,
+  overdue,
+  sentAtLabel,
 }: {
   id: number;
   number: string;
@@ -41,10 +49,15 @@ export function InvoiceActions({
   hasPayments: boolean;
   /** Set when the invoice can take a payment: the balance due, as a number and formatted. */
   payment: { balance: number; balanceLabel: string } | null;
+  overdue: boolean;
+  /** When the invoice was last emailed to the customer, formatted; null if never. */
+  sentAtLabel: string | null;
 }) {
   const [pending, startTransition] = useTransition();
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [busy, setBusy] = useState<"send" | "remind" | null>(null);
   const open = status === "DRAFT" || status === "CONFIRMED";
+  const canSend = status === "CONFIRMED" || status === "PAID";
 
   function run(action: () => Promise<InvoiceActionResult>, onDone?: () => void) {
     startTransition(async () => {
@@ -73,10 +86,32 @@ export function InvoiceActions({
             Confirm invoice
           </Button>
         )}
-        {open && (
-          <Button type="button" variant="secondary" disabled title="Coming soon">
-            <Send className="size-4" aria-hidden /> Send
-            <span className="text-xs font-normal text-muted-foreground">Coming soon</span>
+        {canSend && (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={pending}
+            onClick={() => {
+              setBusy("send");
+              run(() => sendInvoiceToCustomer(id), () => setBusy(null));
+            }}
+          >
+            {busy === "send" ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Send className="size-4" aria-hidden />}
+            {sentAtLabel ? "Send again" : "Send invoice"}
+          </Button>
+        )}
+        {overdue && (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={pending}
+            onClick={() => {
+              setBusy("remind");
+              run(() => sendInvoiceReminder(id), () => setBusy(null));
+            }}
+          >
+            {busy === "remind" ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <BellRing className="size-4" aria-hidden />}
+            Send reminder
           </Button>
         )}
         <ButtonLink href={`/dashboard/invoices/${id}/print`} variant="secondary">
@@ -94,6 +129,11 @@ export function InvoiceActions({
           </Button>
         )}
       </div>
+      {sentAtLabel && (
+        <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MailCheck className="size-3.5" aria-hidden /> Sent {sentAtLabel}
+        </p>
+      )}
       {open && hasPayments && (
         <p className="mt-3 text-xs text-muted-foreground">Payments are recorded on this invoice, so it can&apos;t be cancelled.</p>
       )}

@@ -274,6 +274,8 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
             canCancel={canCancelInvoice(invoice, invoice._count.payments)}
             hasPayments={invoice._count.payments > 0 || toNumber(invoice.amountPaid) > 0}
             payment={paymentBlocked ? null : { balance, balanceLabel: money(balance) }}
+            overdue={overdue}
+            sentAtLabel={invoice.sentAt ? formatDate(invoice.sentAt) : null}
           />
         </FadeIn>
       </div>
