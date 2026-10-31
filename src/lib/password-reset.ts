@@ -2,7 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
 import { sha256 } from "@/lib/auth";
-import { appUrl, sendMail } from "@/lib/mail";
+import { appUrl, escapeHtml, sendMail } from "@/lib/mail";
 
 // Reset links carry a random token; MySQL only stores its SHA-256 hash.
 // A token expires after 30 minutes and works once.
@@ -48,8 +48,4 @@ export async function findValidResetToken(token: string) {
   const row = await db.passwordResetToken.findUnique({ where: { tokenHash: sha256(token) } });
   if (!row || row.usedAt || row.expiresAt <= new Date()) return null;
   return row;
-}
-
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }

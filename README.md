@@ -8,7 +8,7 @@ There are no third-party APIs. Auth, billing, taxes and discounts are all our ow
 
 | Scene from the brief | What SubFlow does |
 |---|---|
-| **1. A new customer signs up** | Sign up, log in and log out. One account per email. Passwords need more than 8 characters, an uppercase letter, a lowercase letter and a special character, with a live checklist on the form and the same check on the server. Passwords are stored as bcrypt hashes. Sessions use an httpOnly cookie, and only the SHA-256 hash of the session id is stored in MySQL. Forgot password sends a single-use reset link that expires in 30 minutes. There are three roles (Admin, Staff, Customer), and only the admin can add staff. |
+| **1. A new customer signs up** | Sign up, log in and log out. One account per email. Passwords need more than 8 characters, an uppercase letter, a lowercase letter and a special character, with a live checklist on the form and the same check on the server. Passwords are stored as bcrypt hashes. Sessions use an httpOnly cookie, and only the SHA-256 hash of the session id is stored in MySQL. Forgot password sends a single-use reset link that expires in 30 minutes. There are three roles (Admin, Staff, Customer), and only the admin can add staff. Customers can sign up themselves, but they can't log in until an admin or staff member approves the account on the Customers page (they get an email when it's approved), and only admins and staff can bill customers. |
 | **2. Launching a new plan** | Products (Software / Add-on / Service) with sales price, cost price and default tax. Variants add an extra price, e.g. Brand = Odoo adds ₹560. Plans have a daily, weekly, monthly or yearly period, a minimum quantity, availability dates, and options for auto-close, close early, pause and renew. |
 | **3. Turning a quote into a subscription** | Quotation templates (plan, lines, validity in days). Subscriptions get numbers like `SUB-00001` and have a customer, plan, start and expiry dates, payment terms, salesperson, optional discount, and lines with variant, quantity, unit price and tax. Status flow: Draft → Quotation → Confirmed → Active → Closed, plus Paused. An expired quotation can't be confirmed. |
 | **4. Billing day** | A **Run billing** button calls `runBilling()`, which a scheduled job can also call. It activates confirmed subscriptions that have started and creates one draft invoice per due period for every active subscription, with lines, tax and discount filled in. A subscription that is behind gets one invoice for each missed period, and an invoice is never created twice (see below). Plans with auto-close close the subscription when it expires. Invoices can be confirmed, cancelled and printed (or saved as PDF). |
@@ -48,6 +48,8 @@ Every demo account uses the password **`Demo@12345`**.
 | Admin | `admin@brightloop.test` | Everything, including staff, catalog, discounts and settings |
 | Staff | `staff@brightloop.test` (also `priya@` and `rahul@brightloop.test`) | Day-to-day work |
 | Customer | `customer@brightloop.test` | Kiran Stores: an active monthly CRM (Odoo) with an unpaid invoice, a yearly Accounting Pro and an open quotation |
+
+Two more customers, `farah@inkwellstudio.test` and `tenzin@himalayantrails.test`, have signed up but are still waiting for approval, so they can't log in until someone approves them under **Customers** in the dashboard.
 
 ### What the seed creates
 

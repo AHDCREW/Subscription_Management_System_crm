@@ -28,6 +28,11 @@ export function appUrl(path = "") {
   return `${base}${path}`;
 }
 
+// For user-supplied text (names) inside HTML email bodies.
+export function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
 export async function sendMail({ to, subject, text, html }: Mail) {
   if (!process.env.SMTP_HOST) {
     const line = "=".repeat(64);

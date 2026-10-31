@@ -53,10 +53,20 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 
   const session = await db.session.findUnique({
     where: { id: sha256(token) },
-    include: { user: { select: { id: true, name: true, email: true, role: true, company: true } } },
+    include: { user: { select: { id: true, name: true, email: true, role: true, company: true, approvedAt: true } } },
   });
   if (!session || session.expiresAt < new Date()) return null;
-  return session.user;
+  // A customer still waiting for approval counts as signed out everywhere,
+  // even if a session exists, so the portal and every role guard block them.
+  const { approvedAt, ...user } = session.user;
+  if (!isApproved({ role: user.role, approvedAt })) return null;
+  return user;
+}
+
+// Team accounts are always approved. Customers who sign up themselves wait
+// until an admin or staff member approves them.
+export function isApproved(user: Pick<User, "role" | "approvedAt">) {
+  return user.role !== "CUSTOMER" || user.approvedAt !== null;
 }
 
 // Use at the top of every page and server action. Redirects to /login when

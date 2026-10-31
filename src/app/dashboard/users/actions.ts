@@ -42,7 +42,7 @@ function parseId(value: FormDataEntryValue | null): number | null {
 // Only the admin can add staff. The new account gets a random password nobody
 // knows, and a reset link so the staff member chooses their own.
 export async function addStaff(_prev: AddStaffState, formData: FormData): Promise<AddStaffState> {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const values = { name: String(formData.get("name") ?? ""), email: String(formData.get("email") ?? "") };
   const parsed = staffSchema.safeParse(values);
@@ -61,7 +61,15 @@ export async function addStaff(_prev: AddStaffState, formData: FormData): Promis
   let user;
   try {
     user = await db.user.create({
-      data: { name, email, role: "STAFF", passwordHash: await hashPassword(randomBytes(32).toString("hex")) },
+      data: {
+        name,
+        email,
+        role: "STAFF",
+        passwordHash: await hashPassword(randomBytes(32).toString("hex")),
+        // Added by the admin, so there's nothing left to approve.
+        approvedAt: new Date(),
+        approvedById: admin.id,
+      },
       select: { id: true, name: true, email: true },
     });
   } catch (err) {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
-import { AlertCircle, CheckCircle2, Inbox } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button as UIButton } from "@/components/ui/button";
 import { Input as UIInput } from "@/components/ui/input";
@@ -216,18 +216,22 @@ export function EmptyState({ message, action }: { message: string; action?: Reac
   );
 }
 
-export function Alert({ tone = "red", children }: { tone?: "red" | "green"; children: ReactNode }) {
-  const Icon = tone === "red" ? AlertCircle : CheckCircle2;
+// red = error, green = done, amber = waiting on someone else (e.g. account approval).
+export function Alert({ tone = "red", children }: { tone?: "red" | "green" | "amber"; children: ReactNode }) {
+  const Icon = tone === "red" ? AlertCircle : tone === "amber" ? Clock : CheckCircle2;
   return (
     <UIAlert
       variant={tone === "red" ? "destructive" : "default"}
       className={cn(
         "animate-in fade-in slide-in-from-top-1 duration-300",
         tone === "green" && "border-success/30 bg-success/5 text-success",
+        tone === "amber" && "border-warning/30 bg-warning/5 text-warning",
       )}
     >
       <Icon />
-      <AlertDescription className={tone === "green" ? "text-success" : undefined}>{children}</AlertDescription>
+      <AlertDescription className={tone === "green" ? "text-success" : tone === "amber" ? "text-warning" : undefined}>
+        {children}
+      </AlertDescription>
     </UIAlert>
   );
 }
