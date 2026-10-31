@@ -1,5 +1,6 @@
-import type { SubscriptionStatus } from "@prisma/client";
+import type { BillingPeriod, SubscriptionStatus } from "@prisma/client";
 import type { BadgeTone } from "@/components/kit";
+import { addPeriod } from "@/lib/billing/period";
 import { round2, toNumber } from "@/lib/money";
 
 // Pure subscription helpers: status display, numbering, dates and totals.
@@ -98,6 +99,56 @@ export function formatDay(value: Date | string | null | undefined): string {
   return new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }).format(
     new Date(value),
   );
+}
+
+// ─── Pause, resume and renew ────────────────────────────────────────────────
+
+/** Whether a subscription in `status` on a plan with `planPausable` may be paused now. */
+export function canPause(status: SubscriptionStatus, planPausable: boolean): boolean {
+  return status === "ACTIVE" && planPausable;
+}
+
+/** Whether a subscription may be renewed: active or paused, a renewable plan, and an expiry date to extend. */
+export function canRenew(status: SubscriptionStatus, planRenewable: boolean, expiryDate: Date | null | undefined): boolean {
+  return (status === "ACTIVE" || status === "PAUSED") && planRenewable && !!expiryDate;
+}
+
+/**
+ * Next invoice date after resuming. Billing continues from the resume date with
+ * no back-billing for the paused time: the later of the stored date and today.
+ */
+export function resumeNextInvoiceDate(nextInvoiceDate: Date | null | undefined, today = todayUtc()): Date {
+  if (!nextInvoiceDate) return today;
+  return startOfUtcDay(nextInvoiceDate) > today.getTime() ? nextInvoiceDate : today;
+}
+
+// Renewal lengths staff can pick, in calendar months.
+export const RENEWAL_TERMS = ["1m", "3m", "6m", "1y"] as const;
+export type RenewalTerm = (typeof RENEWAL_TERMS)[number];
+
+export const RENEWAL_TERM_MONTHS: Record<RenewalTerm, number> = { "1m": 1, "3m": 3, "6m": 6, "1y": 12 };
+export const RENEWAL_TERM_LABEL: Record<RenewalTerm, string> = {
+  "1m": "1 month",
+  "3m": "3 months",
+  "6m": "6 months",
+  "1y": "1 year",
+};
+
+export function isRenewalTerm(value: unknown): value is RenewalTerm {
+  return typeof value === "string" && (RENEWAL_TERMS as readonly string[]).includes(value);
+}
+
+/** Suggested renewal length: a year for yearly plans, otherwise one month (the billing period, at least a month). */
+export function defaultRenewalTerm(billingPeriod: BillingPeriod): RenewalTerm {
+  return billingPeriod === "YEARLY" ? "1y" : "1m";
+}
+
+/**
+ * New expiry date after renewing for `term`: the current expiry moved forward
+ * by whole calendar months (end-of-month clamped, so Jan 31 + 1 month = Feb 28).
+ */
+export function renewedExpiryDate(expiryDate: Date, term: RenewalTerm): Date {
+  return addPeriod(new Date(startOfUtcDay(expiryDate)), "MONTHLY", RENEWAL_TERM_MONTHS[term]);
 }
 
 /** A plan can be sold on `date` when it is active and the date falls inside its own start/end dates. */

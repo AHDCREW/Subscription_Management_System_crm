@@ -13,7 +13,9 @@ import {
   lineSubtotal,
   lineTaxAmount,
   paymentTermsLabel,
+  defaultRenewalTerm,
   subscriptionTotals,
+  toDateInput,
 } from "@/lib/subscriptions/subscriptions";
 import { Badge, ButtonLink, Card, PageHeader, Table, Td, Th } from "@/components/kit";
 import { FadeIn, Stagger } from "@/components/motion";
@@ -56,9 +58,10 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
       confirmedAt: true,
       closedAt: true,
       createdAt: true,
+      updatedAt: true,
       customer: { select: { name: true, email: true, company: true, phone: true } },
       salesperson: { select: { name: true } },
-      plan: { select: { name: true, price: true, billingPeriod: true, closable: true } },
+      plan: { select: { name: true, price: true, billingPeriod: true, closable: true, pausable: true, renewable: true } },
       template: { select: { id: true, name: true } },
       lines: {
         orderBy: { id: "asc" },
@@ -119,10 +122,17 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
               number={sub.number}
               status={sub.status}
               closable={sub.plan.closable}
+              pausable={sub.plan.pausable}
+              renewable={sub.plan.renewable}
               quoteExpired={quoteExpired}
               quotationExpiresAt={formatDay(sub.quotationExpiresAt)}
               startDate={formatDay(sub.startDate)}
               closedAt={formatDay(sub.closedAt)}
+              // No pausedAt column: the last update of a paused subscription is when it was paused.
+              pausedSince={formatDay(sub.updatedAt)}
+              expiryInput={toDateInput(sub.expiryDate)}
+              expiryDate={formatDay(sub.expiryDate)}
+              defaultRenewalTerm={defaultRenewalTerm(sub.plan.billingPeriod)}
             />
           </div>
         </Card>
