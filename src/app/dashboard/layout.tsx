@@ -50,7 +50,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
 
   return (
     <AppShell
-      brand={<Brand subtitle="Brightloop Software" />}
+      brand={<Brand subtitle={user.role === "ADMIN" ? "Admin dashboard" : "Staff dashboard"} />}
       sections={sections}
       footer={FOOTER.filter(allowed).map(strip)}
       user={{ name: user.name, subtitle: user.role === "ADMIN" ? "Admin" : "Staff" }}
