@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CreditCard } from "lucide-react";
 import { requireCustomer } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { Button, ButtonLink } from "@/components/kit";
+import { paymentBlockedReason } from "@/lib/billing/payment";
+import { ButtonLink } from "@/components/kit";
 import { InvoiceDocument, invoiceDocumentInclude } from "@/components/invoice-document";
 import { PrintButton } from "@/components/print-button";
 
@@ -34,6 +35,7 @@ export default async function PortalInvoicePage({ params }: PageProps<"/portal/i
     db.companySettings.findUnique({ where: { id: 1 } }),
   ]);
   if (!invoice) notFound();
+  const payable = paymentBlockedReason(invoice) === null;
 
   return (
     <div className="mx-auto max-w-[210mm]">
@@ -42,12 +44,13 @@ export default async function PortalInvoicePage({ params }: PageProps<"/portal/i
           <ArrowLeft className="size-4" aria-hidden /> All invoices
         </ButtonLink>
         <div className="flex flex-wrap items-center gap-2">
-          {invoice.status === "CONFIRMED" && (
-            <Button type="button" variant="secondary" disabled>
-              <CreditCard className="size-4" aria-hidden /> Pay online — coming soon
-            </Button>
+          {/* While there's a balance, paying is the main action and printing steps back. */}
+          <PrintButton variant={payable ? "secondary" : "primary"}>Print / Save as PDF</PrintButton>
+          {payable && (
+            <ButtonLink href={`/portal/invoices/${invoice.id}/pay`}>
+              <CreditCard className="size-4" aria-hidden /> Pay now
+            </ButtonLink>
           )}
-          <PrintButton>Print / Save as PDF</PrintButton>
         </div>
       </div>
 
