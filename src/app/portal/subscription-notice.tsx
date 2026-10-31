@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import { CalendarClock, CirclePause, FileText, Sparkles, type LucideIcon } from "lucide-react";
+import { CalendarClock, CirclePause, FileText, Hourglass, Sparkles, type LucideIcon } from "lucide-react";
 import { Button, ButtonLink } from "@/components/kit";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { SubscriptionNotice } from "@/lib/subscriptions/portal-notice";
@@ -10,6 +10,7 @@ const ICONS: Record<SubscriptionNotice["kind"], LucideIcon> = {
   paused: CirclePause,
   quotation: FileText,
   confirmed: CalendarClock,
+  requested: Hourglass,
   none: Sparkles,
 };
 

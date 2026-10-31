@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/money";
 import { productTypeInfo } from "@/lib/catalog/product-types";
 import { PERIOD_LABEL, PERIOD_UNIT } from "@/lib/subscriptions/templates";
 import { todayUtc } from "@/lib/subscriptions/subscriptions";
+import { plansOnSaleWhere } from "@/lib/subscriptions/quote-requests";
 import { Badge, ButtonLink, Card, EmptyState, SectionHeader, cx } from "@/components/kit";
 import { FadeIn, Stagger } from "@/components/motion";
 import BlurText from "@/components/reactbits/BlurText";
@@ -45,16 +46,7 @@ export default async function PricingPage() {
       orderBy: [{ type: "asc" }, { name: "asc" }],
       include: { variants: { orderBy: [{ attribute: "asc" }, { extraPrice: "asc" }, { value: "asc" }] } },
     }),
-    db.plan.findMany({
-      where: {
-        active: true,
-        AND: [
-          { OR: [{ startDate: null }, { startDate: { lte: today } }] },
-          { OR: [{ endDate: null }, { endDate: { gte: today } }] },
-        ],
-      },
-      orderBy: [{ price: "asc" }, { name: "asc" }],
-    }),
+    db.plan.findMany({ where: plansOnSaleWhere(today), orderBy: [{ price: "asc" }, { name: "asc" }] }),
   ]);
   const companyName = company?.name ?? "Brightloop Software";
 

@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
 import { isInvoiceOverdue } from "@/lib/billing";
 import { PERIOD_LABEL, PERIOD_UNIT } from "@/lib/subscriptions/templates";
+import { isOpenRequest } from "@/lib/subscriptions/quote-requests";
 import {
   defaultRenewalTerm,
   formatDay,
@@ -23,6 +24,7 @@ import { taxLabel } from "@/app/dashboard/subscriptions/data";
 import { customerSubscriptionsWhere, showsNextBill } from "../data";
 import { ManageSubscription } from "./manage-subscription";
 import { Addons } from "./addons";
+import { WithdrawRequest } from "./withdraw-request";
 
 function parseId(raw: string) {
   const id = Number(raw);
@@ -44,13 +46,16 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
   const id = parseId((await params).id);
   if (!id) notFound();
 
-  // Scoped to the signed-in customer: another customer's id (or a draft) is a 404.
+  // Scoped to the signed-in customer: another customer's id (or a draft they didn't request) is a 404.
   const sub = await db.subscription.findFirst({
     where: { id, ...customerSubscriptionsWhere(user.id) },
     select: {
       id: true,
       number: true,
       status: true,
+      requestedAt: true,
+      notes: true,
+      template: { select: { name: true } },
       startDate: true,
       expiryDate: true,
       nextInvoiceDate: true,
@@ -81,6 +86,8 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
   });
   if (!sub) notFound();
 
+  // The customer's own request, still with the team: no dates, terms or invoices yet.
+  const requested = isOpenRequest(sub);
   // Add-ons can be switched on and off while the subscription is running.
   const managesAddons = sub.status === "ACTIVE" || sub.status === "PAUSED";
   const addonProducts = managesAddons
@@ -119,43 +126,69 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
       <PageHeader
         title={sub.number}
         description={`${sub.plan.name} · ${PERIOD_LABEL[sub.plan.billingPeriod]}`}
-        actions={<StatusBadge status={sub.status} />}
+        actions={<StatusBadge status={sub.status} requested={requested} />}
       />
 
       <FadeIn>
         <Card className="mb-6">
-          <StatusStepper status={sub.status} />
+          <StatusStepper status={sub.status} requested={requested} />
         </Card>
       </FadeIn>
 
-      <Card className="mb-6">
-        <SectionHeader title="Plan & dates" />
-        <dl className="divide-y">
-          <Detail label="Plan">
-            {sub.plan.name} <span className="font-normal text-muted-foreground">· {PERIOD_LABEL[sub.plan.billingPeriod]}</span>
-          </Detail>
-          <Detail label="Start date">{formatDay(sub.startDate)}</Detail>
-          <Detail label="Expiry date">{sub.expiryDate ? formatDay(sub.expiryDate) : "Until closed"}</Detail>
-          <Detail label="Next bill">{showsNextBill(sub.status) ? formatDay(sub.nextInvoiceDate) : "—"}</Detail>
-          <Detail label="Payment terms">{paymentTermsLabel(sub.paymentTermDays)}</Detail>
-          {sub.status === "QUOTATION" && sub.quotationExpiresAt && (
-            <Detail label="Quotation valid until">{formatDay(sub.quotationExpiresAt)}</Detail>
+      {requested ? (
+        <Card className="mb-6">
+          <SectionHeader
+            title="Your quotation request"
+            description="Our team will review this and send you a quotation."
+            actions={<WithdrawRequest id={sub.id} number={sub.number} />}
+          />
+          <dl className="divide-y">
+            <Detail label="Plan">
+              {sub.plan.name} <span className="font-normal text-muted-foreground">· {PERIOD_LABEL[sub.plan.billingPeriod]}</span>
+            </Detail>
+            <Detail label="Preferred start date">{formatDay(sub.startDate)}</Detail>
+            {sub.template && <Detail label="Package">{sub.template.name}</Detail>}
+            <Detail label="Requested on">{formatDay(sub.requestedAt)}</Detail>
+          </dl>
+          {sub.notes && (
+            <div className="mt-3 border-t pt-3">
+              <p className="text-xs text-muted-foreground">Your note</p>
+              <p className="mt-1 text-sm whitespace-pre-line">{sub.notes}</p>
+            </div>
           )}
-        </dl>
-      </Card>
+        </Card>
+      ) : (
+        <>
+          <Card className="mb-6">
+            <SectionHeader title="Plan & dates" />
+            <dl className="divide-y">
+              <Detail label="Plan">
+                {sub.plan.name} <span className="font-normal text-muted-foreground">· {PERIOD_LABEL[sub.plan.billingPeriod]}</span>
+              </Detail>
+              <Detail label="Start date">{formatDay(sub.startDate)}</Detail>
+              <Detail label="Expiry date">{sub.expiryDate ? formatDay(sub.expiryDate) : "Until closed"}</Detail>
+              <Detail label="Next bill">{showsNextBill(sub.status) ? formatDay(sub.nextInvoiceDate) : "—"}</Detail>
+              <Detail label="Payment terms">{paymentTermsLabel(sub.paymentTermDays)}</Detail>
+              {sub.status === "QUOTATION" && sub.quotationExpiresAt && (
+                <Detail label="Quotation valid until">{formatDay(sub.quotationExpiresAt)}</Detail>
+              )}
+            </dl>
+          </Card>
 
-      <ManageSubscription
-        id={sub.id}
-        number={sub.number}
-        status={sub.status}
-        closable={sub.plan.closable}
-        pausable={sub.plan.pausable}
-        renewable={sub.plan.renewable}
-        startDate={formatDay(sub.startDate)}
-        expiryInput={toDateInput(sub.expiryDate)}
-        expiryDate={formatDay(sub.expiryDate)}
-        defaultRenewalTerm={defaultRenewalTerm(sub.plan.billingPeriod)}
-      />
+          <ManageSubscription
+            id={sub.id}
+            number={sub.number}
+            status={sub.status}
+            closable={sub.plan.closable}
+            pausable={sub.plan.pausable}
+            renewable={sub.plan.renewable}
+            startDate={formatDay(sub.startDate)}
+            expiryInput={toDateInput(sub.expiryDate)}
+            expiryDate={formatDay(sub.expiryDate)}
+            defaultRenewalTerm={defaultRenewalTerm(sub.plan.billingPeriod)}
+          />
+        </>
+      )}
 
       {addons.length > 0 && <Addons subscriptionId={sub.id} addons={addons} />}
 
@@ -234,42 +267,48 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
               <dd className="tabular-nums">{formatMoney(totals.total)}</dd>
             </div>
           </dl>
-          <p className="mt-2 text-xs text-muted-foreground">Billed every {unit}, before any discounts.</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {requested
+              ? "An estimate before any discounts. Your quotation confirms the final prices."
+              : `Billed every ${unit}, before any discounts.`}
+          </p>
         </Card>
       </div>
 
-      <section className="mt-6">
-        <SectionHeader title="Invoices" description="Bills raised for this subscription." />
-        {sub.invoices.length === 0 ? (
-          <EmptyState message="No invoices for this subscription yet." />
-        ) : (
-          <Table>
-            <thead>
-              <tr>
-                <Th>Number</Th>
-                <Th>Date</Th>
-                <Th>Status</Th>
-                <Th className="text-right">Total</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {sub.invoices.map((invoice) => (
-                <tr key={invoice.id}>
-                  <Td className="font-medium tabular-nums">{invoice.number}</Td>
-                  <Td className="tabular-nums">{formatDay(invoice.invoiceDate)}</Td>
-                  <Td>
-                    <div className="flex flex-wrap gap-1.5">
-                      <InvoiceStatusBadge status={invoice.status} />
-                      {isInvoiceOverdue(invoice, now) && <OverdueBadge />}
-                    </div>
-                  </Td>
-                  <Td className="text-right tabular-nums">{formatMoney(invoice.total)}</Td>
+      {!requested && (
+        <section className="mt-6">
+          <SectionHeader title="Invoices" description="Bills raised for this subscription." />
+          {sub.invoices.length === 0 ? (
+            <EmptyState message="No invoices for this subscription yet." />
+          ) : (
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Number</Th>
+                  <Th>Date</Th>
+                  <Th>Status</Th>
+                  <Th className="text-right">Total</Th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-      </section>
+              </thead>
+              <tbody>
+                {sub.invoices.map((invoice) => (
+                  <tr key={invoice.id}>
+                    <Td className="font-medium tabular-nums">{invoice.number}</Td>
+                    <Td className="tabular-nums">{formatDay(invoice.invoiceDate)}</Td>
+                    <Td>
+                      <div className="flex flex-wrap gap-1.5">
+                        <InvoiceStatusBadge status={invoice.status} />
+                        {isInvoiceOverdue(invoice, now) && <OverdueBadge />}
+                      </div>
+                    </Td>
+                    <Td className="text-right tabular-nums">{formatMoney(invoice.total)}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </section>
+      )}
     </>
   );
 }

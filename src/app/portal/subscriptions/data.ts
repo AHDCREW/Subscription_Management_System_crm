@@ -1,20 +1,23 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { OPEN_REQUEST } from "@/lib/subscriptions/quote-requests";
 import { subscriptionTotals } from "@/lib/subscriptions/subscriptions";
 
 // Portal queries. Every one is scoped to the signed-in customer's id, so a
 // customer can never read another customer's subscriptions. Drafts are internal
-// to the team and never shown in the portal.
+// to the team and never shown in the portal, except the customer's own
+// quotation requests (Drafts with `requestedAt`).
 
 export function customerSubscriptionsWhere(customerId: number): Prisma.SubscriptionWhereInput {
-  return { customerId, status: { not: "DRAFT" } };
+  return { customerId, OR: [{ status: { not: "DRAFT" } }, OPEN_REQUEST] };
 }
 
 const listSelect = {
   id: true,
   number: true,
   status: true,
+  requestedAt: true,
   startDate: true,
   expiryDate: true,
   nextInvoiceDate: true,
@@ -57,4 +60,5 @@ export function showsNextBill(status: ListRow["status"]): boolean {
   return status === "ACTIVE" || status === "CONFIRMED";
 }
 
-export const NO_SUBSCRIPTIONS = "You don't have any subscriptions yet. Brightloop's team will send you a quotation.";
+export const NO_SUBSCRIPTIONS =
+  "You don't have any subscriptions yet. Request a quotation and Brightloop's team will send you one.";

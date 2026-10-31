@@ -18,6 +18,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
           section: "Your account",
           items: [
             { href: "/portal", label: "Overview", icon: "dashboard", exact: true },
+            { href: "/portal/products", label: "Products", icon: "products" },
             { href: "/portal/subscriptions", label: "Subscriptions", icon: "subscriptions" },
             { href: "/portal/invoices", label: "Invoices", icon: "invoices" },
           ],

@@ -6,6 +6,7 @@ import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
 import { PERIOD_LABEL, PERIOD_UNIT } from "@/lib/subscriptions/templates";
+import { isOpenRequest } from "@/lib/subscriptions/quote-requests";
 import {
   formatDay,
   isEditableStatus,
@@ -55,6 +56,7 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
       paymentTermDays: true,
       quotationExpiresAt: true,
       notes: true,
+      requestedAt: true,
       confirmedAt: true,
       closedAt: true,
       createdAt: true,
@@ -79,6 +81,7 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
   if (!sub) notFound();
 
   const editable = isEditableStatus(sub.status);
+  const requested = isOpenRequest(sub);
   const quoteExpired = sub.status === "QUOTATION" && isQuotationExpired(sub.quotationExpiresAt);
   const unit = PERIOD_UNIT[sub.plan.billingPeriod];
   const lines = sub.lines.map((line) => {
@@ -102,6 +105,7 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <StatusBadge status={sub.status} />
+            {requested && <Badge tone="amber">Customer request</Badge>}
             {quoteExpired && <Badge tone="amber">Quotation expired</Badge>}
             {editable && (
               // Secondary: the status action below is this page's primary.
@@ -116,6 +120,12 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
       <FadeIn>
         <Card className="mb-6">
           <StatusStepper status={sub.status} />
+          {requested && (
+            <p className="mt-6 text-sm text-muted-foreground">
+              {sub.customer.name} asked for this quotation from the portal on {formatDay(sub.requestedAt)}. Prices and
+              taxes come from the catalog: edit anything that needs changing, then send the quotation.
+            </p>
+          )}
           <div className="mt-6 border-t pt-4">
             <StatusActions
               id={sub.id}
@@ -173,6 +183,7 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
                 {formatDay(sub.quotationExpiresAt)}
               </Detail>
             )}
+            {sub.requestedAt && <Detail label="Requested by the customer">{formatDay(sub.requestedAt)}</Detail>}
             {sub.confirmedAt && <Detail label="Confirmed">{formatDay(sub.confirmedAt)}</Detail>}
             {sub.closedAt && <Detail label="Closed">{formatDay(sub.closedAt)}</Detail>}
           </dl>

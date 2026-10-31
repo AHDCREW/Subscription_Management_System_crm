@@ -12,6 +12,7 @@ Turning an offer into a running subscription, and the customer's own view of it.
   - Staff confirm quotations
   - Confirmed becomes Active on the start date
 - **Customer portal:** customers see only their own subscriptions and invoices
+- **Quotation requests:** customers browse the catalog under Portal → Products and request a quotation, from a template or from scratch. The request is a Draft with `requestedAt` set, priced on the server from the catalog (`src/lib/subscriptions/quote-requests.ts`), at most 3 open per customer and withdrawable while it is a draft. Staff see a bubble on Subscriptions, a toast and a work-queue card, then send it as a quotation as usual
 
 ## Folders
 - `src/app/dashboard/{templates,subscriptions}`

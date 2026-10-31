@@ -62,6 +62,23 @@ export async function StaffHome({ user }: { user: SessionUser }) {
         />
 
         <QueueCard
+          title="Quotation requests to review"
+          description="Sent by customers from the portal. Oldest first."
+          href="/dashboard/subscriptions?view=requests"
+          linkLabel="Review"
+          tone="warning"
+          count={queue.quoteRequests.count}
+          empty="No quotation requests waiting."
+          items={queue.quoteRequests.rows.map((sub) => ({
+            key: sub.id,
+            href: `/dashboard/subscriptions/${sub.id}`,
+            title: sub.number,
+            detail: `${who(sub.customer)} · ${sub.plan.name}`,
+            meta: <span className="text-muted-foreground">Requested {formatDay(sub.requestedAt)}</span>,
+          }))}
+        />
+
+        <QueueCard
           title="Overdue invoices to chase"
           description="Most overdue first."
           href="/dashboard/invoices?status=overdue"
