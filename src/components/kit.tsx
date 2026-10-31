@@ -10,7 +10,7 @@ import { Alert as UIAlert, AlertDescription } from "@/components/ui/alert";
 import { TableHead, TableCell } from "@/components/ui/table";
 import BlurText from "@/components/reactbits/BlurText";
 
-// SubFlow's app kit: thin wrappers over shadcn/ui so every module shares one look.
+// ROOT's app kit: thin wrappers over shadcn/ui so every module shares one look.
 // Pages import from here; reach for "@/components/ui/*" directly for anything richer.
 
 export const cx = cn;
@@ -111,7 +111,7 @@ export function PageHeader({ title, description, actions }: { title: string; des
   return (
     <div className="-mx-6 mb-7 flex flex-wrap items-center justify-between gap-4 border-b px-6 py-5 md:-mx-8 md:px-8">
       <div className="min-w-0">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="font-heading text-2xl font-semibold tracking-tight">
           <BlurText key={title} text={title} animateBy="words" direction="top" trigger="load" stepDuration={0.25} distance={12} blur={6} />
         </h1>
         {description && (

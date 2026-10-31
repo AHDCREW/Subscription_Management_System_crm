@@ -63,7 +63,7 @@ export default async function PricingPage() {
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-3">
           <div>
             <p className="text-base font-semibold tracking-tight">{companyName}</p>
-            <p className="text-xs text-muted-foreground">Powered by SubFlow</p>
+            <p className="text-xs text-muted-foreground">Powered by ROOT</p>
           </div>
           <nav className="flex items-center gap-2">
             {user ? (
@@ -143,7 +143,7 @@ export default async function PricingPage() {
                   className={cx(
                     "flex flex-col gap-3",
                     plan.billingPeriod === "YEARLY" &&
-                      "border-primary bg-[linear-gradient(160deg,oklch(0.33_0.006_286),oklch(0.17_0.006_286)_70%)] text-primary-foreground shadow-md [&_.text-muted-foreground]:text-primary-foreground/65 [&_.text-foreground]:text-primary-foreground [&_.border-t]:border-white/15",
+                      "border-primary bg-[linear-gradient(160deg,#1b3b66,#102a4d_70%)] text-primary-foreground shadow-md [&_.text-muted-foreground]:text-primary-foreground/65 [&_.text-foreground]:text-primary-foreground [&_.border-t]:border-white/15",
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -196,7 +196,7 @@ export default async function PricingPage() {
       </main>
 
       <footer className="pb-8 text-center text-xs text-muted-foreground">
-        {companyName} · Powered by SubFlow
+        {companyName} · Powered by ROOT
       </footer>
       </div>
     </div>

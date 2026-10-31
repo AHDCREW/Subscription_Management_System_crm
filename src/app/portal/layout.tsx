@@ -17,7 +17,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
           </BrandMark>
           <div className="min-w-0 leading-tight">
             <p className="truncate text-base font-semibold tracking-tight">{companyName}</p>
-            <p className="text-xs text-muted-foreground">Customer portal · Powered by SubFlow</p>
+            <p className="text-xs text-muted-foreground">Customer portal · Powered by ROOT</p>
           </div>
         </div>
       }
