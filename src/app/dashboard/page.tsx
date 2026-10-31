@@ -30,7 +30,7 @@ export default async function DashboardPage() {
           value={data.activeSubscriptions}
           hint={`${totalSubscriptions} in total`}
         />
-        <StatCard className="lg:col-span-2" label="MRR" value={data.mrr} prefix={symbol} hint="Excl. tax, before discounts" />
+        <StatCard featured className="lg:col-span-2" label="MRR" value={data.mrr} prefix={symbol} hint="Monthly recurring revenue · excl. tax, before discounts" />
         <StatCard
           className="lg:col-span-2"
           label="Revenue this month"

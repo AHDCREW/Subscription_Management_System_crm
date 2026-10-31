@@ -113,7 +113,7 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <nav
           aria-label="Filter by status"
-          className="inline-flex flex-wrap items-center gap-0.5 rounded-lg bg-muted p-[3px] text-sm animate-in fade-in duration-500"
+          className="inline-flex flex-wrap items-center gap-0.5 rounded-xl bg-muted p-1 text-sm animate-in fade-in duration-500"
         >
           {tabs.map((tab) => {
             const active = (tab.key ?? null) === (status ?? null);
@@ -123,8 +123,8 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
                 href={href({ status: tab.key, page: 1 })}
                 aria-current={active ? "page" : undefined}
                 className={cx(
-                  "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 font-medium text-foreground/60 transition-all hover:text-foreground",
-                  active && "bg-background text-foreground shadow-sm",
+                  "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 font-medium text-foreground/60 transition-all hover:text-foreground",
+                  active && "bg-card text-foreground shadow-xs ring-1 ring-border/60",
                 )}
               >
                 {tab.label}

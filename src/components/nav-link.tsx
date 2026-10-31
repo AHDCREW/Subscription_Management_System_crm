@@ -44,7 +44,6 @@ export function NavLink({
   children,
   exact = false,
   icon,
-  variant = "sidebar",
 }: {
   href: string;
   children: React.ReactNode;
@@ -59,19 +58,16 @@ export function NavLink({
   return (
     <Link
       href={href}
+      aria-current={active ? "page" : undefined}
       className={cn(
-        "group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
-        variant === "sidebar" && "hover:translate-x-0.5",
+        "flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-sm whitespace-nowrap transition-colors duration-150",
         active
-          ? "bg-sidebar-accent text-foreground"
-          : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
+          ? "bg-sidebar-accent font-medium text-foreground"
+          : "text-foreground/75 hover:bg-sidebar-accent/60 hover:text-foreground",
       )}
     >
-      {Icon && <Icon className={cn("size-4 shrink-0", active && "text-brand")} aria-hidden />}
+      {Icon && <Icon className={cn("size-[18px] shrink-0", active ? "text-foreground" : "text-foreground/60")} strokeWidth={1.75} aria-hidden />}
       {children}
-      {active && variant === "sidebar" && (
-        <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-brand animate-in fade-in zoom-in-50" />
-      )}
     </Link>
   );
 }

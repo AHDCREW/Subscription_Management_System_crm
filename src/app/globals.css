@@ -31,6 +31,7 @@
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-brand: var(--brand);
+  --color-canvas: var(--canvas);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);
@@ -58,48 +59,51 @@
 }
 
 :root {
-  /* SubFlow "ink & paper": warm neutral surfaces, ink-black primary, one signal-orange accent. */
-  --background: oklch(0.982 0.004 85);
-  --foreground: oklch(0.205 0.012 60);
-  --card: oklch(0.997 0.002 85);
-  --card-foreground: oklch(0.205 0.012 60);
-  --popover: oklch(0.997 0.002 85);
-  --popover-foreground: oklch(0.205 0.012 60);
-  --primary: oklch(0.235 0.014 60);
-  --primary-foreground: oklch(0.982 0.004 85);
-  --secondary: oklch(0.955 0.006 80);
-  --secondary-foreground: oklch(0.235 0.014 60);
-  --muted: oklch(0.955 0.006 80);
-  --muted-foreground: oklch(0.5 0.014 60);
-  --accent: oklch(0.945 0.007 80);
-  --accent-foreground: oklch(0.235 0.014 60);
-  /* Brand accent: used sparingly (logo mark, active marker, focus). Never for status. */
-  --brand: oklch(0.645 0.175 42);
-  /* Semantic status colours: text uses the token, surfaces use it at /10 */
-  --destructive: oklch(0.53 0.17 28);
-  --success: oklch(0.49 0.1 152);
-  --warning: oklch(0.56 0.12 72);
-  --info: oklch(0.49 0.085 245);
-  --border: oklch(0.905 0.007 80);
-  --input: oklch(0.89 0.008 80);
-  --ring: oklch(0.645 0.175 42);
-  --chart-1: oklch(0.235 0.014 60);
-  --chart-2: oklch(0.645 0.175 42);
-  --chart-3: oklch(0.49 0.085 245);
-  --chart-4: oklch(0.49 0.1 152);
-  --chart-5: oklch(0.7 0.01 70);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.968 0.005 82);
-  --sidebar-foreground: oklch(0.205 0.012 60);
-  --sidebar-primary: oklch(0.235 0.014 60);
-  --sidebar-primary-foreground: oklch(0.982 0.004 85);
-  --sidebar-accent: oklch(0.94 0.007 80);
-  --sidebar-accent-foreground: oklch(0.205 0.012 60);
-  --sidebar-border: oklch(0.905 0.007 80);
-  --sidebar-ring: oklch(0.645 0.175 42);
+  /* SubFlow: neutral cool greys, near-black primary, one orange brand accent.
+     canvas = outer app background; sidebar = app frame; card/background = white content panels. */
+  --canvas: oklch(0.932 0.002 286);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.21 0.006 286);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.006 286);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.006 286);
+  --primary: oklch(0.235 0.006 286);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.967 0.001 286);
+  --secondary-foreground: oklch(0.235 0.006 286);
+  --muted: oklch(0.967 0.001 286);
+  --muted-foreground: oklch(0.515 0.012 286);
+  --accent: oklch(0.955 0.002 286);
+  --accent-foreground: oklch(0.235 0.006 286);
+  /* Brand accent: logo mark and small highlights only. */
+  --brand: oklch(0.7 0.18 45);
+  /* Semantic status colours: dots and text use the token, surfaces use it at /10 */
+  --destructive: oklch(0.577 0.215 27);
+  --success: oklch(0.6 0.14 155);
+  --warning: oklch(0.67 0.17 50);
+  --info: oklch(0.55 0.15 255);
+  --border: oklch(0.92 0.003 286);
+  --input: oklch(0.905 0.004 286);
+  --ring: oklch(0.7 0.18 45);
+  --chart-1: oklch(0.235 0.006 286);
+  --chart-2: oklch(0.7 0.18 45);
+  --chart-3: oklch(0.55 0.15 255);
+  --chart-4: oklch(0.6 0.14 155);
+  --chart-5: oklch(0.8 0.005 286);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.977 0.001 286);
+  --sidebar-foreground: oklch(0.21 0.006 286);
+  --sidebar-primary: oklch(0.235 0.006 286);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.928 0.003 286);
+  --sidebar-accent-foreground: oklch(0.21 0.006 286);
+  --sidebar-border: oklch(0.92 0.003 286);
+  --sidebar-ring: oklch(0.7 0.18 45);
 }
 
 .dark {
+  --canvas: oklch(0.12 0 0);
   --brand: oklch(0.7 0.16 45);
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
