@@ -4,9 +4,19 @@ import { ArrowLeft } from "lucide-react";
 import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDate, formatMoney, round2, toNumber } from "@/lib/money";
-import { canCancelInvoice, canConfirmInvoice, isInvoiceOverdue, lastDayOfPeriod, outstandingAmount } from "@/lib/billing";
-import { Card, PageHeader, Table, Td, Th } from "@/components/kit";
+import {
+  canCancelInvoice,
+  canConfirmInvoice,
+  isInvoiceOverdue,
+  lastDayOfPeriod,
+  outstandingAmount,
+  paidPercent,
+  paymentBlockedReason,
+  PAYMENT_METHOD_LABELS,
+} from "@/lib/billing";
+import { Card, PageHeader, SectionHeader, Table, Td, Th } from "@/components/kit";
 import { FadeIn } from "@/components/motion";
+import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { InvoiceStatusBadge, OverdueBadge } from "../status";
 import { InvoiceActions } from "./invoice-actions";
@@ -29,6 +39,10 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
         subscription: { select: { number: true, plan: { select: { name: true, billingPeriod: true } } } },
         lines: { orderBy: { id: "asc" } },
         _count: { select: { payments: true } },
+        payments: {
+          orderBy: [{ paymentDate: "desc" }, { id: "desc" }],
+          include: { recordedBy: { select: { name: true } } },
+        },
       },
     }),
     db.companySettings.findUnique({ where: { id: 1 } }),
@@ -39,6 +53,8 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
   const money = (value: Parameters<typeof formatMoney>[0]) => formatMoney(value, currency);
   const overdue = isInvoiceOverdue(invoice);
   const balance = outstandingAmount(invoice.total, invoice.amountPaid);
+  const paymentBlocked = paymentBlockedReason(invoice);
+  const percentPaid = paidPercent(invoice.total, invoice.amountPaid);
 
   return (
     <>
@@ -157,6 +173,63 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
           <p className="-mt-4 text-xs text-muted-foreground">
             Prices exclude tax. Line amount = quantity × unit price − discount + tax.
           </p>
+
+          <Card className="overflow-hidden p-0">
+            <div className="p-6">
+              <SectionHeader
+                title="Payments"
+                description={paymentBlocked && invoice.status !== "PAID" ? paymentBlocked : "Every payment received against this invoice."}
+              />
+              <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+                <p>
+                  <span className="font-semibold tabular-nums">{money(invoice.amountPaid)}</span>
+                  <span className="text-muted-foreground"> paid of {money(invoice.total)}</span>
+                </p>
+                <p className={invoice.status === "PAID" ? "font-medium text-success" : "text-muted-foreground"}>
+                  {invoice.status === "PAID" ? (
+                    "Paid in full"
+                  ) : (
+                    <>
+                      Balance <span className={`font-medium tabular-nums ${overdue ? "text-destructive" : "text-foreground"}`}>{money(balance)}</span>
+                    </>
+                  )}
+                </p>
+              </div>
+              <Progress
+                value={percentPaid}
+                aria-label={`${Math.round(percentPaid)}% paid`}
+                className={`mt-3 h-1.5 ${invoice.status === "PAID" ? "*:data-[slot=progress-indicator]:bg-success" : ""}`}
+              />
+            </div>
+            {invoice.payments.length === 0 ? (
+              <p className="border-t px-6 py-6 text-center text-sm text-muted-foreground">No payments recorded yet.</p>
+            ) : (
+              <div className="overflow-x-auto border-t">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <Th>Date</Th>
+                      <Th>Method</Th>
+                      <Th className="text-right">Amount</Th>
+                      <Th>Note</Th>
+                      <Th>Recorded by</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoice.payments.map((payment) => (
+                      <tr key={payment.id} className="transition-colors hover:bg-muted/40">
+                        <Td className="tabular-nums">{formatDate(payment.paymentDate)}</Td>
+                        <Td>{PAYMENT_METHOD_LABELS[payment.method]}</Td>
+                        <Td className="text-right font-medium tabular-nums">{money(payment.amount)}</Td>
+                        <Td className="max-w-56 whitespace-normal break-words text-muted-foreground">{payment.note || "—"}</Td>
+                        <Td className="text-muted-foreground">{payment.recordedBy?.name ?? (payment.method === "DEMO_PAY" ? "Customer" : "—")}</Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
         </FadeIn>
 
         <FadeIn delay={0.1} className="space-y-6">
@@ -200,6 +273,7 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
             canConfirm={canConfirmInvoice(invoice.status)}
             canCancel={canCancelInvoice(invoice, invoice._count.payments)}
             hasPayments={invoice._count.payments > 0 || toNumber(invoice.amountPaid) > 0}
+            payment={paymentBlocked ? null : { balance, balanceLabel: money(balance) }}
           />
         </FadeIn>
       </div>

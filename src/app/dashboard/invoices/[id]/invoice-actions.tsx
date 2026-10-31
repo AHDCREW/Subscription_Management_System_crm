@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cancelInvoice, confirmInvoice, type InvoiceActionResult } from "../actions";
+import { RecordPaymentDialog } from "./record-payment-dialog";
 
 const HINT: Record<InvoiceStatus, string> = {
   DRAFT: "Confirm the invoice to make it payable.",
@@ -30,6 +31,7 @@ export function InvoiceActions({
   canConfirm,
   canCancel,
   hasPayments,
+  payment,
 }: {
   id: number;
   number: string;
@@ -37,6 +39,8 @@ export function InvoiceActions({
   canConfirm: boolean;
   canCancel: boolean;
   hasPayments: boolean;
+  /** Set when the invoice can take a payment: the balance due, as a number and formatted. */
+  payment: { balance: number; balanceLabel: string } | null;
 }) {
   const [pending, startTransition] = useTransition();
   const [confirmingCancel, setConfirmingCancel] = useState(false);
@@ -60,6 +64,9 @@ export function InvoiceActions({
       <p className="text-sm font-medium">Actions</p>
       <p className="mt-1 text-xs text-muted-foreground">{HINT[status]}</p>
       <div className="mt-4 grid gap-2">
+        {payment && (
+          <RecordPaymentDialog invoiceId={id} number={number} balance={payment.balance} balanceLabel={payment.balanceLabel} />
+        )}
         {canConfirm && (
           <Button type="button" onClick={() => run(() => confirmInvoice(id))} disabled={pending}>
             {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <CheckCircle2 className="size-4" aria-hidden />}
