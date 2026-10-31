@@ -1,6 +1,7 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { PENDING_CUSTOMERS } from "@/lib/account-approval";
 import { round2, toNumber } from "@/lib/money";
 import { addPeriod, monthlyRecurringValue, outstandingAmount, toUtcDate } from "@/lib/billing";
 import { subscriptionNumber } from "@/lib/subscriptions/subscriptions";
@@ -287,6 +288,118 @@ export async function getDashboardData(now = new Date()) {
     topOverdue,
     recentPayments,
     subscriptionsByStatus: new Map(byStatus.map((row) => [row.status, row._count._all])),
+  };
+}
+
+// ─── Role homes ───────────────────────────────────────────────────────────────
+
+/** Rows shown per work-queue card; the card links to the full filtered list. */
+const QUEUE_SIZE = 5;
+const EXPIRING_WITHIN_DAYS = 14;
+
+/** Counts behind the admin's setup strip. */
+export async function getSetupCounts() {
+  const [products, plans, taxes, discounts, staff, pendingCustomers] = await Promise.all([
+    db.product.count({ where: { active: true } }),
+    db.plan.count({ where: { active: true } }),
+    db.tax.count({ where: { active: true } }),
+    db.discount.count({ where: { active: true } }),
+    db.user.count({ where: { role: "STAFF" } }),
+    db.user.count({ where: PENDING_CUSTOMERS }),
+  ]);
+  return { products, plans, taxes, discounts, staff, pendingCustomers };
+}
+
+/**
+ * The staff work queue: for each kind of task, how many are waiting and the
+ * first few, oldest or most urgent first. Every filter hits an index (status,
+ * role, dueDate, paymentDate), so this stays cheap with thousands of rows.
+ */
+export async function getStaffQueue(now = new Date()) {
+  const today = reportToday(now);
+  const tomorrow = addPeriod(today, "DAILY");
+  const overdue = overdueWhere(today);
+  const expiring: Prisma.SubscriptionWhereInput = {
+    status: { in: ["ACTIVE", "PAUSED"] },
+    expiryDate: { gte: today, lte: addPeriod(today, "DAILY", EXPIRING_WITHIN_DAYS) },
+  };
+  const paidToday: Prisma.PaymentWhereInput = { paymentDate: { gte: today, lt: tomorrow } };
+  const customer = { select: { name: true, company: true } } as const;
+
+  const [
+    currency,
+    pendingCount,
+    pending,
+    quotationCount,
+    quotations,
+    draftCount,
+    drafts,
+    overdueCount,
+    overdueRows,
+    expiringCount,
+    expiringRows,
+    paymentCount,
+    payments,
+  ] = await Promise.all([
+    getCurrency(),
+    db.user.count({ where: PENDING_CUSTOMERS }),
+    db.user.findMany({
+      where: PENDING_CUSTOMERS,
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      take: QUEUE_SIZE,
+      select: { id: true, name: true, email: true, company: true, createdAt: true },
+    }),
+    db.subscription.count({ where: { status: "QUOTATION" } }),
+    db.subscription.findMany({
+      where: { status: "QUOTATION" },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      take: QUEUE_SIZE,
+      select: { id: true, number: true, quotationExpiresAt: true, customer, plan: { select: { name: true } } },
+    }),
+    db.invoice.count({ where: { status: "DRAFT" } }),
+    db.invoice.findMany({
+      where: { status: "DRAFT" },
+      orderBy: [{ invoiceDate: "asc" }, { id: "asc" }],
+      take: QUEUE_SIZE,
+      select: { id: true, number: true, invoiceDate: true, total: true, customer },
+    }),
+    db.invoice.count({ where: overdue }),
+    db.invoice.findMany({
+      where: overdue,
+      orderBy: [{ dueDate: "asc" }, { id: "asc" }],
+      take: QUEUE_SIZE,
+      select: { id: true, number: true, dueDate: true, total: true, amountPaid: true, customer },
+    }),
+    db.subscription.count({ where: expiring }),
+    db.subscription.findMany({
+      where: expiring,
+      orderBy: [{ expiryDate: "asc" }, { id: "asc" }],
+      take: QUEUE_SIZE,
+      select: { id: true, number: true, expiryDate: true, customer, plan: { select: { name: true } } },
+    }),
+    db.payment.count({ where: paidToday }),
+    db.payment.findMany({
+      where: paidToday,
+      orderBy: { id: "desc" },
+      take: QUEUE_SIZE,
+      select: {
+        id: true,
+        method: true,
+        amount: true,
+        invoice: { select: { id: true, number: true, customer: { select: { name: true } } } },
+      },
+    }),
+  ]);
+
+  return {
+    today,
+    currency,
+    pendingCustomers: { count: pendingCount, rows: pending },
+    quotations: { count: quotationCount, rows: quotations },
+    draftInvoices: { count: draftCount, rows: drafts },
+    overdueInvoices: { count: overdueCount, rows: overdueRows },
+    expiring: { count: expiringCount, rows: expiringRows },
+    paymentsToday: { count: paymentCount, rows: payments },
   };
 }
 
