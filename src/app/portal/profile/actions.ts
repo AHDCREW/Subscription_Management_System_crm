@@ -44,7 +44,8 @@ export async function saveDetails(_prev: DetailsState, formData: FormData): Prom
 
   const text = (key: DetailsField) => {
     const value = formData.get(key);
-    return typeof value === "string" ? value : "";
+    // Browsers submit textarea line breaks as \r\n; store plain \n so exports and invoices stay clean.
+    return typeof value === "string" ? value.replace(/\r\n?/g, "\n") : "";
   };
   const values: DetailsValues = {
     name: text("name"),

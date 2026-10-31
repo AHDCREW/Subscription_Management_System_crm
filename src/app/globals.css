@@ -200,3 +200,15 @@
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
+
+/* Users who ask for less motion get every CSS animation and transition finished instantly,
+   so entrance fades never leave content invisible. (GSAP and Motion components check this too.) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
