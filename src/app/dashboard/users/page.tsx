@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Form from "next/form";
+import { redirect } from "next/navigation";
 import type { Prisma, Role } from "@prisma/client";
-import { isApproved, requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDay } from "@/lib/subscriptions/subscriptions";
 import { Badge, Button, ButtonLink, EmptyState, Input, PageHeader, Table, Td, Th, cx, type BadgeTone } from "@/components/kit";
@@ -10,35 +11,41 @@ import { RoleButton } from "./role-button";
 
 const PAGE_SIZE = 25;
 
-const ROLE_INFO: Record<Role, { label: string; tone: BadgeTone; param: string }> = {
+// This page is the Brightloop team only. Customers live on /dashboard/customers.
+type TeamRole = Exclude<Role, "CUSTOMER">;
+const ROLE_INFO: Record<TeamRole, { label: string; tone: BadgeTone; param: string }> = {
   ADMIN: { label: "Admin", tone: "indigo", param: "admin" },
   STAFF: { label: "Staff", tone: "blue", param: "staff" },
-  CUSTOMER: { label: "Customer", tone: "gray", param: "customer" },
 };
-const ROLES = Object.keys(ROLE_INFO) as Role[];
+const ROLES = Object.keys(ROLE_INFO) as TeamRole[];
 
 function first(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value) ?? "";
 }
 
-export default async function UsersPage({ searchParams }: PageProps<"/dashboard/users">) {
+export default async function StaffPage({ searchParams }: PageProps<"/dashboard/users">) {
   const me = await requireAdmin();
 
   const params = await searchParams;
   const q = first(params.q).trim().slice(0, 120);
   const roleParam = first(params.role).toLowerCase();
+  // Old links to the customer filter now go to the Customers page.
+  if (roleParam === "customer") redirect(q ? `/dashboard/customers?q=${encodeURIComponent(q)}` : "/dashboard/customers");
   const role = ROLES.find((r) => ROLE_INFO[r].param === roleParam);
   const requestedPage = Math.max(1, Number.parseInt(first(params.page), 10) || 1);
 
   // MySQL's default collation makes `contains` case-insensitive.
-  const search: Prisma.UserWhereInput = q ? { OR: [{ name: { contains: q } }, { email: { contains: q } }] } : {};
+  const search: Prisma.UserWhereInput = {
+    role: { in: ROLES },
+    ...(q && { OR: [{ name: { contains: q } }, { email: { contains: q } }] }),
+  };
   const where: Prisma.UserWhereInput = { ...search, ...(role && { role }) };
 
   const [total, roleCounts] = await Promise.all([
     db.user.count({ where }),
     db.user.groupBy({ by: ["role"], where: search, _count: { _all: true } }),
   ]);
-  const countFor = (r?: Role) =>
+  const countFor = (r?: TeamRole) =>
     roleCounts.filter((row) => !r || row.role === r).reduce((sum, row) => sum + row._count._all, 0);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -54,14 +61,12 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
       name: true,
       email: true,
       role: true,
-      company: true,
-      approvedAt: true,
       createdAt: true,
-      _count: { select: { subscriptions: true } },
+      approvedBy: { select: { name: true } },
     },
   });
 
-  const href = (opts: { role?: Role; page?: number }) => {
+  const href = (opts: { role?: TeamRole; page?: number }) => {
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
     if (opts.role) sp.set("role", ROLE_INFO[opts.role].param);
@@ -69,14 +74,25 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
     const qs = sp.toString();
     return qs ? `/dashboard/users?${qs}` : "/dashboard/users";
   };
-  const tabs: { value: string; label: string; role?: Role }[] = [
-    { value: "all", label: "All" },
+  const tabs: { value: string; label: string; role?: TeamRole }[] = [
+    { value: "all", label: "All team" },
     ...ROLES.map((r) => ({ value: ROLE_INFO[r].param, label: ROLE_INFO[r].label, role: r })),
   ];
 
   return (
     <>
-      <PageHeader title="Users & staff" description="Everyone with a Brightloop account. Only admins can add staff." actions={<AddStaffDialog />} />
+      <PageHeader
+        title="Staff"
+        description="Your Brightloop team. Admins control everything; staff handle day-to-day work. Only admins can add staff."
+        actions={
+          <>
+            <ButtonLink href="/dashboard/customers" variant="secondary">
+              View customers
+            </ButtonLink>
+            <AddStaffDialog />
+          </>
+        }
+      />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         {/* Link-based tabs: each role filter is its own URL, so it survives reloads and sharing. */}
@@ -124,7 +140,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
       </div>
 
       {users.length === 0 ? (
-        <EmptyState message={q ? "No users match your search." : "No users with this role yet."} />
+        <EmptyState message={q ? "No team members match your search." : "No team members with this role yet."} />
       ) : (
         <>
           <Table>
@@ -133,9 +149,8 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
                 <Th>Name</Th>
                 <Th>Email</Th>
                 <Th>Role</Th>
-                <Th>Company</Th>
+                <Th>Added by</Th>
                 <Th>Joined</Th>
-                <Th className="text-right">Subscriptions</Th>
                 <Th className="w-0">
                   <span className="sr-only">Actions</span>
                 </Th>
@@ -143,7 +158,8 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
             </thead>
             <tbody>
               {users.map((user) => {
-                const info = ROLE_INFO[user.role];
+                const teamRole = user.role as TeamRole; // the query only returns team roles
+                const info = ROLE_INFO[teamRole];
                 const isMe = user.id === me.id;
                 return (
                   <tr key={user.id} className="hover:bg-muted/50">
@@ -153,22 +169,12 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
                     </Td>
                     <Td className="text-muted-foreground">{user.email}</Td>
                     <Td>
-                      <span className="inline-flex flex-wrap gap-1.5">
-                        <Badge tone={info.tone}>{info.label}</Badge>
-                        {!isApproved(user) && <Badge tone="amber">Waiting for approval</Badge>}
-                      </span>
+                      <Badge tone={info.tone}>{info.label}</Badge>
                     </Td>
-                    <Td>{user.company || <span className="text-muted-foreground/60">—</span>}</Td>
+                    <Td>{user.approvedBy?.name ?? <span className="text-muted-foreground/60">—</span>}</Td>
                     <Td className="whitespace-nowrap tabular-nums">{formatDay(user.createdAt)}</Td>
-                    <Td className="text-right">
-                      {user.role === "CUSTOMER" ? (
-                        <Badge>{user._count.subscriptions}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground/60">—</span>
-                      )}
-                    </Td>
                     <Td className="py-1.5 text-right">
-                      {user.role !== "CUSTOMER" && !isMe && <RoleButton userId={user.id} name={user.name} role={user.role} />}
+                      {!isMe && <RoleButton userId={user.id} name={user.name} role={teamRole} />}
                     </Td>
                   </tr>
                 );
