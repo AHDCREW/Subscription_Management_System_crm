@@ -7,11 +7,13 @@ import { formatMoney } from "@/lib/money";
 import { isInvoiceOverdue } from "@/lib/billing";
 import { PERIOD_LABEL, PERIOD_UNIT } from "@/lib/subscriptions/templates";
 import {
+  defaultRenewalTerm,
   formatDay,
   lineSubtotal,
   lineTaxAmount,
   paymentTermsLabel,
   subscriptionTotals,
+  toDateInput,
 } from "@/lib/subscriptions/subscriptions";
 import { ButtonLink, Card, EmptyState, PageHeader, SectionHeader, Table, Td, Th } from "@/components/kit";
 import { FadeIn } from "@/components/motion";
@@ -19,6 +21,7 @@ import { StatusBadge, StatusStepper } from "@/app/dashboard/subscriptions/status
 import { InvoiceStatusBadge, OverdueBadge } from "@/app/dashboard/invoices/status";
 import { taxLabel } from "@/app/dashboard/subscriptions/data";
 import { customerSubscriptionsWhere, showsNextBill } from "../data";
+import { ManageSubscription } from "./manage-subscription";
 
 function parseId(raw: string) {
   const id = Number(raw);
@@ -52,7 +55,9 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
       nextInvoiceDate: true,
       paymentTermDays: true,
       quotationExpiresAt: true,
-      plan: { select: { name: true, price: true, billingPeriod: true } },
+      plan: {
+        select: { name: true, price: true, billingPeriod: true, closable: true, pausable: true, renewable: true },
+      },
       lines: {
         orderBy: { id: "asc" },
         select: {
@@ -118,6 +123,19 @@ export default async function PortalSubscriptionPage({ params }: PageProps<"/por
           )}
         </dl>
       </Card>
+
+      <ManageSubscription
+        id={sub.id}
+        number={sub.number}
+        status={sub.status}
+        closable={sub.plan.closable}
+        pausable={sub.plan.pausable}
+        renewable={sub.plan.renewable}
+        startDate={formatDay(sub.startDate)}
+        expiryInput={toDateInput(sub.expiryDate)}
+        expiryDate={formatDay(sub.expiryDate)}
+        defaultRenewalTerm={defaultRenewalTerm(sub.plan.billingPeriod)}
+      />
 
       <Table>
         <thead>
