@@ -15,6 +15,7 @@ import {
   Repeat,
   Settings,
   Tags,
+  UserCheck,
   Users,
   User,
   type LucideIcon,
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils";
 const ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   reports: BarChart3,
+  customers: UserCheck,
   subscriptions: Repeat,
   templates: FileStack,
   invoices: FileText,

@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { ArrowRight, UserCheck } from "lucide-react";
 import { requireTeam } from "@/lib/auth";
+import { countPendingCustomers } from "@/lib/account-approval";
 import { formatDate, formatMoney, toNumber } from "@/lib/money";
 import { outstandingAmount } from "@/lib/billing";
 import { SUBSCRIPTION_STATUSES, formatDay } from "@/lib/subscriptions/subscriptions";
@@ -14,7 +16,7 @@ const linkClass = "underline decoration-foreground/25 underline-offset-4 hover:d
 
 export default async function DashboardPage() {
   const user = await requireTeam();
-  const data = await getDashboardData();
+  const [data, pendingCustomers] = await Promise.all([getDashboardData(), countPendingCustomers()]);
   const money = (value: Parameters<typeof formatMoney>[0]) => formatMoney(value, data.currency);
   const symbol = currencySymbol(data.currency);
   const totalSubscriptions = [...data.subscriptionsByStatus.values()].reduce((sum, n) => sum + n, 0);
@@ -22,6 +24,23 @@ export default async function DashboardPage() {
   return (
     <>
       <PageHeader title={`Welcome, ${user.name.split(" ")[0]}`} description="Brightloop Software at a glance." />
+
+      {pendingCustomers > 0 && (
+        <Link
+          href="/dashboard/customers?tab=pending"
+          className="mb-6 flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 text-sm outline-none transition-colors hover:bg-warning/10 focus-visible:ring-3 focus-visible:ring-ring/50 animate-in fade-in slide-in-from-top-1 duration-300"
+        >
+          <UserCheck className="size-4 shrink-0 text-warning" aria-hidden />
+          <span className="flex-1">
+            <span className="font-medium tabular-nums">{pendingCustomers}</span> customer account
+            {pendingCustomers === 1 ? " is" : "s are"} waiting for approval
+          </span>
+          <span className="inline-flex items-center gap-1 font-medium">
+            Review
+            <ArrowRight className="size-4" aria-hidden />
+          </span>
+        </Link>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
         <StatCard

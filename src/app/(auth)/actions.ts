@@ -3,11 +3,11 @@
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { createSession, destroySession, hashPassword, homeFor, verifyPassword } from "@/lib/auth";
+import { createSession, destroySession, hashPassword, homeFor, isApproved, verifyPassword } from "@/lib/auth";
 import { passwordErrors } from "@/lib/password";
 import { findValidResetToken, sendPasswordResetLink } from "@/lib/password-reset";
 
-export type AuthState = { error?: string; email?: string; name?: string } | undefined;
+export type AuthState = { error?: string; pending?: boolean; email?: string; name?: string } | undefined;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,12 +19,16 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     return { error: "Incorrect email or password.", email };
   }
+  // Only reached with the right password, so it doesn't reveal which emails exist.
+  if (!isApproved(user)) return { pending: true, email };
 
   await createSession(user.id);
   redirect(homeFor(user.role));
 }
 
 // Public signup always creates a Customer. Only the admin can add staff.
+// The new account waits for an admin or staff member to approve it, so no
+// session is created here.
 export async function signup(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -38,10 +42,9 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   if (password !== confirm) return { error: "Passwords do not match.", email, name };
 
   try {
-    const user = await db.user.create({
-      data: { name, email, passwordHash: await hashPassword(password), role: "CUSTOMER" },
+    await db.user.create({
+      data: { name, email, passwordHash: await hashPassword(password), role: "CUSTOMER", approvedAt: null },
     });
-    await createSession(user.id);
   } catch (err) {
     // The unique index on email is the final guard against duplicate accounts.
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
@@ -50,7 +53,7 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
     throw err;
   }
 
-  redirect("/portal");
+  redirect("/signup/pending");
 }
 
 export async function logout() {

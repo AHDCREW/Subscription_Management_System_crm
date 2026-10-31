@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Form from "next/form";
 import type { Prisma, Role } from "@prisma/client";
-import { requireAdmin } from "@/lib/auth";
+import { isApproved, requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDay } from "@/lib/subscriptions/subscriptions";
 import { Badge, Button, ButtonLink, EmptyState, Input, PageHeader, Table, Td, Th, cx, type BadgeTone } from "@/components/kit";
@@ -55,6 +55,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
       email: true,
       role: true,
       company: true,
+      approvedAt: true,
       createdAt: true,
       _count: { select: { subscriptions: true } },
     },
@@ -152,7 +153,10 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
                     </Td>
                     <Td className="text-muted-foreground">{user.email}</Td>
                     <Td>
-                      <Badge tone={info.tone}>{info.label}</Badge>
+                      <span className="inline-flex flex-wrap gap-1.5">
+                        <Badge tone={info.tone}>{info.label}</Badge>
+                        {!isApproved(user) && <Badge tone="amber">Waiting for approval</Badge>}
+                      </span>
                     </Td>
                     <Td>{user.company || <span className="text-muted-foreground/60">—</span>}</Td>
                     <Td className="whitespace-nowrap tabular-nums">{formatDay(user.createdAt)}</Td>

@@ -10,6 +10,7 @@ const NAV: { section?: string; items: NavItem[] }[] = [
   {
     section: "Sales",
     items: [
+      { href: "/dashboard/customers", label: "Customers", icon: "customers" },
       { href: "/dashboard/subscriptions", label: "Subscriptions", icon: "subscriptions" },
       { href: "/dashboard/templates", label: "Quotation templates", icon: "templates" },
     ],
