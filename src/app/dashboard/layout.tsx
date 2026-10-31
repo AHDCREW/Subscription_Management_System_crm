@@ -1,7 +1,9 @@
 import type { Role } from "@prisma/client";
 import { requireTeam } from "@/lib/auth";
+import { countPendingCustomers } from "@/lib/account-approval";
 import { Brand } from "@/components/brand";
 import { AppShell, type ShellNavSection } from "@/components/app-shell";
+import { PendingRequestsWatcher } from "./pending-requests-watcher";
 
 type NavItem = { href: string; label: string; icon: string; roles?: Role[]; exact?: boolean };
 
@@ -41,8 +43,16 @@ const FOOTER: NavItem[] = [
 
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const user = await requireTeam();
+  // Customer requests (signups waiting for approval) show as a bubble on Customers.
+  const pending = await countPendingCustomers();
   const allowed = (item: NavItem) => !item.roles || item.roles.includes(user.role);
-  const strip = (item: NavItem) => ({ href: item.href, label: item.label, icon: item.icon, exact: item.exact });
+  const strip = (item: NavItem) => ({
+    href: item.href,
+    label: item.label,
+    icon: item.icon,
+    exact: item.exact,
+    badge: item.href === "/dashboard/customers" ? pending : undefined,
+  });
 
   const sections: ShellNavSection[] = NAV.map(({ section, items }) => ({ section, items: items.filter(allowed).map(strip) })).filter(
     (s) => s.items.length > 0,
@@ -56,6 +66,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
       user={{ name: user.name, subtitle: user.role === "ADMIN" ? "Admin" : "Staff" }}
     >
       {children}
+      <PendingRequestsWatcher count={pending} />
     </AppShell>
   );
 }

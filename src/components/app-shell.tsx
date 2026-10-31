@@ -3,7 +3,8 @@ import { NavLink } from "@/components/nav-link";
 import { UserMenu } from "@/components/user-menu";
 import { SidebarSearch, type SearchItem } from "@/components/sidebar-search";
 
-export type ShellNavItem = { href: string; label: string; icon: string; exact?: boolean };
+// `badge` is a count bubble, e.g. customer requests waiting for approval.
+export type ShellNavItem = { href: string; label: string; icon: string; exact?: boolean; badge?: number };
 export type ShellNavSection = { section?: string; items: ShellNavItem[] };
 
 // The app frame shared by the staff dashboard and the customer portal:
@@ -40,7 +41,7 @@ export function AppShell({
                   </p>
                 )}
                 {items.map((item) => (
-                  <NavLink key={item.href} href={item.href} exact={item.exact} icon={item.icon}>
+                  <NavLink key={item.href} href={item.href} exact={item.exact} icon={item.icon} badge={item.badge}>
                     {item.label}
                   </NavLink>
                 ))}
@@ -51,7 +52,7 @@ export function AppShell({
             {footer.length > 0 && (
               <div className="mb-3 flex flex-col gap-0.5">
                 {footer.map((item) => (
-                  <NavLink key={item.href} href={item.href} exact={item.exact} icon={item.icon}>
+                  <NavLink key={item.href} href={item.href} exact={item.exact} icon={item.icon} badge={item.badge}>
                     {item.label}
                   </NavLink>
                 ))}
