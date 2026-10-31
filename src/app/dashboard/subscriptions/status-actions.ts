@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { Prisma, SubscriptionStatus } from "@prisma/client";
+import { z } from "zod";
 import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -9,10 +10,24 @@ import {
   STATUS_INFO,
   addDays,
   canClose,
+  canPause,
+  canRenew,
   formatDay,
   isQuotationExpired,
+  parseDateInput,
+  RENEWAL_TERM_LABEL,
+  RENEWAL_TERMS,
+  renewedExpiryDate,
+  resumeNextInvoiceDate,
+  toDateInput,
   todayUtc,
+  type RenewalTerm,
 } from "@/lib/subscriptions/subscriptions";
+
+const renewInput = z.object({
+  expectedExpiry: z.string().refine((value) => parseDateInput(value) !== null),
+  term: z.enum(RENEWAL_TERMS),
+});
 
 // Status changes made by the team from the subscription detail page.
 // Confirmed → Active is done by the billing run, not here.
@@ -23,9 +38,10 @@ const current = {
   number: true,
   status: true,
   startDate: true,
+  expiryDate: true,
   nextInvoiceDate: true,
   quotationExpiresAt: true,
-  plan: { select: { closable: true } },
+  plan: { select: { closable: true, pausable: true, renewable: true } },
 } as const;
 
 type Current = Prisma.SubscriptionGetPayload<{ select: typeof current }>;
@@ -35,7 +51,9 @@ type Step = {
   // Extra rule on top of the status check; return an error to refuse.
   check?: (sub: Current) => string | null;
   data: (sub: Current) => Prisma.SubscriptionUpdateManyMutationInput;
-  message: (number: string) => string;
+  // Extra conditions for the guarded update, for changes that keep the status.
+  guard?: (sub: Current) => Prisma.SubscriptionWhereInput;
+  message: (number: string, sub: Current) => string;
 };
 
 const STEPS = {
@@ -76,7 +94,42 @@ const STEPS = {
     data: () => ({ status: "CLOSED", closedAt: new Date() }),
     message: (number) => `${number} closed.`,
   },
+  pause: {
+    from: ["ACTIVE"],
+    check: (sub) => (canPause(sub.status, sub.plan.pausable) ? null : "This plan can't be paused."),
+    data: () => ({ status: "PAUSED" }),
+    message: (number) => `${number} paused. No invoices will be raised until it is resumed.`,
+  },
+  resume: {
+    from: ["PAUSED"],
+    // No back-billing: the billing run only picks up periods from the resume date on.
+    data: (sub) => ({ status: "ACTIVE", nextInvoiceDate: resumeNextInvoiceDate(sub.nextInvoiceDate) }),
+    message: (number, sub) => `${number} resumed. Next invoice on ${formatDay(resumeNextInvoiceDate(sub.nextInvoiceDate))}.`,
+  },
 } satisfies Record<string, Step>;
+
+// Renewing keeps the status, so the update is also guarded on the expiry date
+// the user saw: a double click or a stale page can't extend it twice.
+// The new expiry is always worked out here from the stored expiry and the term.
+function renewStep(expectedExpiry: string, term: RenewalTerm): Step {
+  return {
+    from: ["ACTIVE", "PAUSED"],
+    check: (sub) => {
+      if (!sub.plan.renewable) return "This plan can't be renewed.";
+      if (!canRenew(sub.status, sub.plan.renewable, sub.expiryDate)) {
+        return "This subscription has no expiry date, so there is nothing to renew.";
+      }
+      if (toDateInput(sub.expiryDate) !== expectedExpiry) {
+        return `${sub.number} was just renewed or changed. Reload to see its latest expiry date.`;
+      }
+      return null;
+    },
+    guard: (sub) => ({ expiryDate: sub.expiryDate }),
+    data: (sub) => ({ expiryDate: renewedExpiryDate(sub.expiryDate!, term) }),
+    message: (number, sub) =>
+      `${number} renewed for ${RENEWAL_TERM_LABEL[term]}, until ${formatDay(renewedExpiryDate(sub.expiryDate!, term))}.`,
+  };
+}
 
 async function transition(rawId: number, step: Step): Promise<StatusActionResult> {
   await requireTeam();
@@ -98,9 +151,12 @@ async function transition(rawId: number, step: Step): Promise<StatusActionResult
 
     // The status guard makes a double click or a stale page a no-op instead of
     // applying the change twice.
-    const { count } = await tx.subscription.updateMany({ where: { id, status: sub.status }, data: step.data(sub) });
+    const { count } = await tx.subscription.updateMany({
+      where: { ...step.guard?.(sub), id, status: sub.status },
+      data: step.data(sub),
+    });
     if (count === 0) return { ok: false, error: `${sub.number} was just changed by someone else. Reload and try again.` };
-    return { ok: true, message: step.message(sub.number) };
+    return { ok: true, message: step.message(sub.number, sub) };
   });
 
   if (result.ok) {
@@ -124,4 +180,31 @@ export async function backToDraft(id: number) {
 
 export async function closeSubscription(id: number) {
   return transition(id, STEPS.close);
+}
+
+export async function pauseSubscription(id: number) {
+  return transition(id, STEPS.pause);
+}
+
+export async function resumeSubscription(id: number) {
+  return transition(id, STEPS.resume);
+}
+
+/**
+ * `expectedExpiry` is the `YYYY-MM-DD` expiry shown in the confirm dialog and
+ * `term` the chosen renewal length; the new date itself is computed here.
+ */
+export async function renewSubscription(id: number, expectedExpiry: string, term: RenewalTerm): Promise<StatusActionResult> {
+  await requireTeam();
+  const parsed = renewInput.safeParse({ expectedExpiry, term });
+  if (!parsed.success) {
+    const badTerm = parsed.error.issues.some((issue) => issue.path[0] === "term");
+    return {
+      ok: false,
+      error: badTerm
+        ? "Choose a renewal length of 1, 3 or 6 months, or 1 year."
+        : "The expiry date on this page is out of date. Reload and try again.",
+    };
+  }
+  return transition(id, renewStep(parsed.data.expectedExpiry, parsed.data.term));
 }
