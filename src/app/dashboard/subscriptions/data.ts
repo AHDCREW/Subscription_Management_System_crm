@@ -1,6 +1,7 @@
 import "server-only";
 import type { BillingPeriod } from "@prisma/client";
 import { db } from "@/lib/db";
+import { APPROVED_CUSTOMERS } from "@/lib/account-approval";
 import { toNumber } from "@/lib/money";
 import { toDateInput } from "@/lib/subscriptions/subscriptions";
 
@@ -154,10 +155,11 @@ export async function getSubscriptionFormOptions(keepTaxIds: number[] = []): Pro
   };
 }
 
-// First customers shown in the picker before anything is typed.
+// First customers shown in the picker before anything is typed. Only approved
+// customers can be billed, so signups waiting for approval never appear.
 export async function getInitialCustomers(): Promise<CustomerOption[]> {
   return db.user.findMany({
-    where: { role: "CUSTOMER" },
+    where: APPROVED_CUSTOMERS,
     orderBy: { name: "asc" },
     take: CUSTOMER_SEARCH_LIMIT,
     select: customerSelect,

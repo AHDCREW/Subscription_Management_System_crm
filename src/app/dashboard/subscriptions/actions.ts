@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { requireTeam } from "@/lib/auth";
+import { APPROVED_CUSTOMERS } from "@/lib/account-approval";
 import { db } from "@/lib/db";
 import { round2, toNumber } from "@/lib/money";
 import {
@@ -166,7 +167,7 @@ export async function saveSubscription(formData: FormData): Promise<SaveSubscrip
   const keepTaxIds = new Set(existing?.lines.flatMap((line) => (line.taxId ? [line.taxId] : [])) ?? []);
 
   const [customer, plan, template, products, taxes] = await Promise.all([
-    db.user.findUnique({ where: { id: customerId }, select: { role: true } }),
+    db.user.findUnique({ where: { id: customerId }, select: { role: true, approvedAt: true } }),
     db.plan.findUnique({
       where: { id: planId },
       select: { name: true, active: true, minQuantity: true, startDate: true, endDate: true },
@@ -192,6 +193,7 @@ export async function saveSubscription(formData: FormData): Promise<SaveSubscrip
 
   if (!customer) fieldErrors.customerId = "That customer no longer exists.";
   else if (customer.role !== "CUSTOMER") fieldErrors.customerId = "Subscriptions can only be created for customer accounts.";
+  else if (!customer.approvedAt) fieldErrors.customerId = "This customer is waiting for approval. Approve them under Customers first.";
 
   if (!plan) fieldErrors.planId = "That plan no longer exists. Choose another.";
   else if (!plan.active) fieldErrors.planId = `${plan.name} is inactive. Choose an active plan.`;
@@ -313,14 +315,14 @@ export async function saveSubscription(formData: FormData): Promise<SaveSubscrip
   }
 }
 
-// Customer picker search: existing CUSTOMER accounts by name, email or company.
+// Customer picker search: approved CUSTOMER accounts by name, email or company.
 export async function searchCustomers(query: string): Promise<CustomerOption[]> {
   await requireTeam();
 
   const q = String(query ?? "").trim().slice(0, 120);
   return db.user.findMany({
     where: {
-      role: "CUSTOMER",
+      ...APPROVED_CUSTOMERS,
       ...(q && { OR: [{ name: { contains: q } }, { email: { contains: q } }, { company: { contains: q } }] }),
     },
     orderBy: { name: "asc" },

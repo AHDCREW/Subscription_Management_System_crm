@@ -6,7 +6,7 @@ import { searchCustomers } from "./actions";
 import type { CustomerOption } from "./data";
 import { cx } from "@/components/kit";
 
-// Searchable select over existing CUSTOMER accounts. Customers sign up
+// Searchable select over approved CUSTOMER accounts. Customers sign up
 // themselves, so staff can only pick one here, never create one.
 export function CustomerPicker({
   value,
