@@ -29,6 +29,7 @@ import {
   confirmSubscription,
   pauseSubscription,
   renewSubscription,
+  resendQuotationEmail,
   resumeSubscription,
   sendQuotation,
   type StatusActionResult,
@@ -107,7 +108,8 @@ export function StatusActions({
     startTransition(async () => {
       const result = await action();
       if (result.ok) {
-        toast.success(result.message);
+        if (result.warning) toast.warning(result.warning);
+        else toast.success(result.message);
         onDone?.();
       } else {
         toast.error(result.error);
@@ -125,7 +127,7 @@ export function StatusActions({
   let actions: ReactNode;
 
   if (status === "DRAFT") {
-    hint = "Send the quotation to the customer when the lines are ready.";
+    hint = "Send the quotation when the lines are ready. The customer gets it by email.";
     actions = (
       <Button disabled={pending} onClick={() => run(() => sendQuotation(id))}>
         Send quotation
@@ -140,6 +142,11 @@ export function StatusActions({
         <Button variant={quoteExpired ? "secondary" : "ghost"} disabled={pending} onClick={() => run(() => backToDraft(id))}>
           Back to draft
         </Button>
+        {!quoteExpired && (
+          <Button variant="secondary" disabled={pending} onClick={() => run(() => resendQuotationEmail(id))}>
+            Resend quotation email
+          </Button>
+        )}
         <Button disabled={pending || quoteExpired} onClick={() => run(() => confirmSubscription(id))}>
           Confirm
         </Button>
