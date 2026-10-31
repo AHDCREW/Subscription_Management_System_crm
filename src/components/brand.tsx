@@ -34,23 +34,19 @@ const NODES = [
 ];
 
 const GRADIENTS = {
-  // Electric Blue glowing up from the roots into Deep Navy.
+  // Odoo grey roots growing up into the purple R, as in the brief's logo colours.
   color: [
-    [0, "#0A8BE2"],
-    [0.12, "#0085DB"],
-    [0.25, "#0073C8"],
-    [0.4, "#0058A0"],
-    [0.54, "#004786"],
-    [0.72, "#0D3966"],
-    [0.84, "#102A4D"],
-    [1, "#102A4D"],
+    [0, "#ADADAD"],
+    [0.25, "#8F8F8F"],
+    [0.45, "#8A6A82"],
+    [0.62, "#714B67"],
+    [1, "#714B67"],
   ],
-  // For navy backgrounds: Soft Blue roots into white.
+  // For purple backgrounds: highlighter-yellow roots into white.
   reversed: [
-    [0, "#3FA9F2"],
-    [0.22, "#57B4F4"],
-    [0.42, "#A6D6F8"],
-    [0.62, "#FFFFFF"],
+    [0, "#FBB130"],
+    [0.3, "#FDD68A"],
+    [0.58, "#FFFFFF"],
     [1, "#FFFFFF"],
   ],
 } as const;
@@ -97,27 +93,30 @@ export function RootSymbol({ variant = "color", className }: { variant?: keyof t
   );
 }
 
-// The ROOT wordmark: custom geometric letterforms, drawn in currentColor.
-export function RootWordmark({ className }: { className?: string }) {
+// The ROOT wordmark: custom geometric letterforms. Two-tone like the brief's logo (purple first
+// letter, grey rest); `mono` draws it all in currentColor.
+export function RootWordmark({ className, mono = false }: { className?: string; mono?: boolean }) {
+  const rest = mono ? undefined : "fill-stone";
   return (
-    <svg viewBox="-2 -2 404 104" className={cn("shrink-0 fill-current", className)} role="img" aria-label="ROOT">
+    <svg viewBox="-2 -2 404 104" className={cn("shrink-0 fill-current", !mono && "fill-primary", className)} role="img" aria-label="ROOT">
       <path fillRule="evenodd" d="M0 0H40A29 29 0 0 1 40 58H18V100H0Z M18 18H40A11 11 0 0 1 40 40H18Z" />
       <path d="M36 48H56L80 100H60Z" />
       <path
+        className={rest}
         fillRule="evenodd"
         d="M142 -1a51 51 0 1 0 0.001 0Z M142 17a33 33 0 1 1 -0.001 0Z M254 -1a51 51 0 1 0 0.001 0Z M254 17a33 33 0 1 1 -0.001 0Z"
       />
-      <path d="M320 0H400V18H369V100H351V18H320Z" />
+      <path className={rest} d="M320 0H400V18H369V100H351V18H320Z" />
     </svg>
   );
 }
 
-// App-icon tile (navy square, white R + database). Children replace the mark, e.g. a company initial.
+// App-icon tile (purple square, white R + database). Children replace the mark, e.g. a company initial.
 export function BrandMark({ className, children }: { className?: string; children?: React.ReactNode }) {
   return (
     <span
       className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.15),0_1px_2px_rgb(16_42_77/0.25)]",
+        "flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.15),0_1px_2px_rgb(79_49_73/0.3)]",
         className,
       )}
     >
@@ -138,7 +137,7 @@ export function Brand({ className, subtitle }: { className?: string; subtitle?: 
     <div className={cn("flex items-center gap-2.5", className)}>
       <RootSymbol className="size-9" />
       <div className="min-w-0 leading-tight">
-        <RootWordmark className="h-3.5 w-auto text-primary" />
+        <RootWordmark className="h-3.5 w-auto" />
         {subtitle && <p className="mt-1 truncate text-xs text-muted-foreground">{subtitle}</p>}
       </div>
     </div>

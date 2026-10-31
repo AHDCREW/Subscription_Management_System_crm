@@ -163,47 +163,47 @@ export default async function Home() {
 
       <main>
         {/* Hero */}
-        <section className="relative isolate overflow-hidden bg-navy text-white">
+        <section className="relative isolate overflow-hidden border-b bg-background">
           <div
             aria-hidden
-            className="absolute inset-0 -z-10 bg-[radial-gradient(60%_80%_at_15%_110%,rgb(0_119_200/0.55),transparent_70%),radial-gradient(40%_60%_at_95%_-10%,rgb(140_196_238/0.18),transparent_70%)]"
+            className="absolute inset-0 -z-10 bg-[radial-gradient(55%_70%_at_10%_105%,rgb(251_177_48/0.22),transparent_70%),radial-gradient(45%_60%_at_95%_-5%,rgb(113_75_103/0.14),transparent_70%)]"
           />
-          <CircuitPattern className="-z-10 text-soft-blue/15" />
+          <CircuitPattern className="-z-10 text-plum/10" />
           <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-[1.05fr_1fr] lg:py-28">
             <FadeIn>
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-soft-blue">
-                <span className="size-1.5 rounded-full bg-soft-blue" aria-hidden />
+              <p className="inline-flex items-center gap-2 rounded-full border border-plum/20 bg-plum/5 px-3 py-1 text-xs font-medium text-plum">
+                <span className="size-1.5 rounded-full bg-sun" aria-hidden />
                 Customer portal for {companyName}
               </p>
-              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-                Where your <span className="text-soft-blue">subscriptions</span> grow.
+              <h1 className="mt-6 font-display text-6xl leading-[0.95] font-bold text-balance sm:text-7xl lg:text-8xl">
+                Where your <span className="marker">subscriptions</span> grow.
               </h1>
-              <p className="mt-5 max-w-xl text-base text-pretty text-white/75 sm:text-lg">
+              <p className="mt-5 max-w-xl text-base text-pretty text-muted-foreground sm:text-lg">
                 Your plans, invoices and payments with {companyName}, all in one place. Create an account, get approved by
                 our team, and manage everything from your own portal.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 {home ? (
-                  <ButtonLink href={home} className="h-11 bg-electric px-5 text-base text-white hover:bg-electric/90">
+                  <ButtonLink href={home} className="h-11 px-5 text-base">
                     {user?.role === "CUSTOMER" ? "Open your portal" : "Open the dashboard"} <ArrowRight />
                   </ButtonLink>
                 ) : (
-                  <ButtonLink href="/signup" className="h-11 bg-electric px-5 text-base text-white hover:bg-electric/90">
+                  <ButtonLink href="/signup" className="h-11 px-5 text-base">
                     Create your account <ArrowRight />
                   </ButtonLink>
                 )}
                 <ButtonLink
                   href="/pricing"
                   variant="secondary"
-                  className="h-11 border-white/25 bg-white/5 px-5 text-base text-white hover:bg-white/10 hover:text-white"
+                  className="h-11 px-5 text-base"
                 >
                   See plans &amp; pricing
                 </ButtonLink>
               </div>
-              <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/70">
+              <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
                 {["Free to sign up", "Approved by our team", "Pay by card or UPI"].map((t) => (
                   <li key={t} className="flex items-center gap-2">
-                    <CircleCheck className="size-4 text-soft-blue" aria-hidden />
+                    <CircleCheck className="size-4 text-plum" aria-hidden />
                     {t}
                   </li>
                 ))}
@@ -292,13 +292,13 @@ export default async function Home() {
                       key={plan.id}
                       className={cx(
                         "relative flex flex-col rounded-2xl border bg-card p-6 shadow-xs",
-                        isFeatured && "border-primary bg-[linear-gradient(160deg,#1b3b66,#102a4d_70%)] text-white shadow-lg",
+                        isFeatured && "border-primary bg-[linear-gradient(160deg,#7d5573,#4f3149_70%)] text-white shadow-lg",
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="font-semibold">{plan.name}</h3>
                         {isFeatured ? (
-                          <span className="rounded-full bg-electric px-2.5 py-0.5 text-xs font-medium text-white">Best value</span>
+                          <span className="rounded-full bg-sun px-2.5 py-0.5 text-xs font-semibold text-foreground">Best value</span>
                         ) : (
                           plan.name !== PERIOD_LABEL[plan.billingPeriod] && <Badge tone="outline">{PERIOD_LABEL[plan.billingPeriod]}</Badge>
                         )}
@@ -320,7 +320,7 @@ export default async function Home() {
                       </p>
                       <ul className={cx("mt-6 space-y-2.5 text-sm", isFeatured ? "text-white/80" : "text-muted-foreground")}>
                         <li className="flex gap-2">
-                          <CircleCheck className={cx("size-4 shrink-0 translate-y-0.5", isFeatured ? "text-soft-blue" : "text-brand")} aria-hidden />
+                          <CircleCheck className={cx("size-4 shrink-0 translate-y-0.5", isFeatured ? "text-sun" : "text-brand")} aria-hidden />
                           Billed every {PERIOD_UNIT[plan.billingPeriod]}
                         </li>
                         {plan.pausable && <PlanPerk featured={isFeatured}>Pause when you need a break</PlanPerk>}
@@ -332,7 +332,7 @@ export default async function Home() {
                         <ButtonLink
                           href={home ?? "/signup"}
                           variant={isFeatured ? "primary" : "secondary"}
-                          className={cx("w-full", isFeatured && "bg-electric text-white hover:bg-electric/90")}
+                          className={cx("w-full", isFeatured && "bg-sun text-foreground hover:bg-sun/90")}
                         >
                           {home ? "Open your account" : "Get started"}
                         </ButtonLink>
@@ -396,14 +396,14 @@ export default async function Home() {
 
         {/* Final call to action */}
         <section className="px-6 py-20">
-          <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-3xl bg-navy px-6 py-16 text-center text-white sm:px-12">
+          <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-3xl bg-plum px-6 py-16 text-center text-white sm:px-12">
             <div
               aria-hidden
-              className="absolute inset-0 -z-10 bg-[radial-gradient(50%_90%_at_50%_120%,rgb(0_119_200/0.6),transparent_70%)]"
+              className="absolute inset-0 -z-10 bg-[radial-gradient(50%_90%_at_50%_120%,rgb(251_177_48/0.35),transparent_70%)]"
             />
-            <CircuitPattern className="-z-10 text-soft-blue/10" />
+            <CircuitPattern className="-z-10 text-white/10" />
             <RootSymbol variant="reversed" className="mx-auto size-14" />
-            <h2 className="mx-auto mt-6 max-w-2xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+            <h2 className="mx-auto mt-6 max-w-3xl font-display text-5xl leading-none font-bold text-balance sm:text-6xl">
               Ready to get started with {companyName}?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-white/70">
@@ -411,12 +411,12 @@ export default async function Home() {
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               {home ? (
-                <ButtonLink href={home} className="h-11 bg-electric px-5 text-base text-white hover:bg-electric/90">
+                <ButtonLink href={home} className="h-11 bg-sun px-5 text-base text-foreground hover:bg-sun/90">
                   Go to your account <ArrowRight />
                 </ButtonLink>
               ) : (
                 <>
-                  <ButtonLink href="/signup" className="h-11 bg-electric px-5 text-base text-white hover:bg-electric/90">
+                  <ButtonLink href="/signup" className="h-11 bg-sun px-5 text-base text-foreground hover:bg-sun/90">
                     Create your account <ArrowRight />
                   </ButtonLink>
                   <ButtonLink
@@ -472,7 +472,9 @@ function SectionIntro({
   return (
     <div className={cx("max-w-2xl", align === "center" && "mx-auto text-center")}>
       <p className="font-mono text-xs font-medium tracking-widest text-brand uppercase">{eyebrow}</p>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{title}</h2>
+      <h2 className="mt-3 font-display text-5xl leading-tight font-bold text-balance sm:text-6xl">
+        <span className="marker">{title}</span>
+      </h2>
       {body && <p className="mt-4 text-pretty text-muted-foreground">{body}</p>}
     </div>
   );
@@ -481,7 +483,7 @@ function SectionIntro({
 function PlanPerk({ featured, children }: { featured: boolean; children: React.ReactNode }) {
   return (
     <li className="flex gap-2">
-      <CircleCheck className={cx("size-4 shrink-0 translate-y-0.5", featured ? "text-soft-blue" : "text-brand")} aria-hidden />
+      <CircleCheck className={cx("size-4 shrink-0 translate-y-0.5", featured ? "text-sun" : "text-brand")} aria-hidden />
       {children}
     </li>
   );
@@ -491,8 +493,8 @@ function PlanPerk({ featured, children }: { featured: boolean; children: React.R
 function PortalPreview({ productName, price, companyName }: { productName: string; price: string; companyName: string }) {
   return (
     <div className="relative" aria-hidden>
-      <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-electric/20 blur-3xl" />
-      <div className="rounded-2xl border border-white/10 bg-white p-5 text-foreground shadow-2xl shadow-black/30">
+      <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-sun/25 blur-3xl" />
+      <div className="rounded-2xl border bg-white p-5 text-foreground shadow-2xl shadow-plum/20">
         <div className="flex items-center justify-between border-b pb-4">
           <div className="flex items-center gap-2.5">
             <RootSymbol className="size-7" />
@@ -504,7 +506,7 @@ function PortalPreview({ productName, price, companyName }: { productName: strin
           <span className="flex size-8 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-primary">AK</span>
         </div>
 
-        <div className="mt-4 rounded-xl bg-[linear-gradient(160deg,#1b3b66,#102a4d_70%)] p-4 text-white">
+        <div className="mt-4 rounded-xl bg-[linear-gradient(160deg,#7d5573,#4f3149_70%)] p-4 text-white">
           <div className="flex items-center justify-between">
             <p className="text-xs text-white/60">Your subscription</p>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium">
@@ -521,7 +523,7 @@ function PortalPreview({ productName, price, companyName }: { productName: strin
               <span className="font-mono">18 of 30 days</span>
             </div>
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
-              <div className="h-full w-3/5 rounded-full bg-linear-to-r from-electric to-soft-blue" />
+              <div className="h-full w-3/5 rounded-full bg-linear-to-r from-sun to-sun-soft" />
             </div>
           </div>
         </div>
@@ -541,7 +543,7 @@ function PortalPreview({ productName, price, companyName }: { productName: strin
                 </div>
               </div>
               {inv.status === "Open" ? (
-                <span className="rounded-md bg-electric px-2.5 py-1 text-xs font-medium text-white">Pay now</span>
+                <span className="rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground">Pay now</span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
                   <span className="size-1.5 rounded-full bg-success" /> Paid
