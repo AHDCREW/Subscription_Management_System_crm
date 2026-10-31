@@ -4,10 +4,11 @@ import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDate, formatMoney, toNumber } from "@/lib/money";
 import { productTypeInfo } from "@/lib/catalog/product-types";
-import { Badge, Button, ButtonLink, Card, PageHeader, Table, Td, Th } from "@/components/kit";
+import { Badge, Button, ButtonLink, Card, PageHeader } from "@/components/kit";
 import { setProductActive } from "../actions";
 import { ProductForm } from "../product-form";
 import { taxLabel, taxOptions } from "../tax-options";
+import { VariantsCard, type VariantRow } from "./variants-card";
 
 export default async function ProductPage({ params }: PageProps<"/dashboard/products/[id]">) {
   const user = await requireTeam();
@@ -21,10 +22,22 @@ export default async function ProductPage({ params }: PageProps<"/dashboard/prod
     where: { id },
     include: {
       tax: { select: { name: true, rate: true } },
-      variants: { orderBy: [{ attribute: "asc" }, { value: "asc" }] },
+      variants: {
+        orderBy: [{ attribute: "asc" }, { extraPrice: "asc" }, { value: "asc" }],
+        include: { _count: { select: { subscriptionLines: true, templateLines: true } } },
+      },
     },
   });
   if (!product) notFound();
+
+  const variants: VariantRow[] = product.variants.map((v) => ({
+    id: v.id,
+    attribute: v.attribute,
+    value: v.value,
+    extraPrice: toNumber(v.extraPrice),
+    subscriptionLines: v._count.subscriptionLines,
+    templateLines: v._count.templateLines,
+  }));
 
   const type = productTypeInfo(product.type);
 
@@ -93,39 +106,12 @@ export default async function ProductPage({ params }: PageProps<"/dashboard/prod
         </Card>
       )}
 
-      <Card>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-slate-900">Variants</h2>
-          <Badge tone="gray">Variants: coming next</Badge>
-        </div>
-        {product.variants.length === 0 ? (
-          <p className="text-sm text-slate-500">This product has no variants.</p>
-        ) : (
-          <Table>
-            <thead>
-              <tr>
-                <Th>Attribute</Th>
-                <Th>Value</Th>
-                <Th className="text-right">Extra price</Th>
-                <Th className="text-right">Line price</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {product.variants.map((v) => (
-                <tr key={v.id}>
-                  <Td>{v.attribute}</Td>
-                  <Td>{v.value}</Td>
-                  <Td className="text-right tabular-nums">+{formatMoney(v.extraPrice)}</Td>
-                  <Td className="text-right tabular-nums">
-                    {formatMoney(toNumber(product.salesPrice) + toNumber(v.extraPrice))}
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-        <p className="mt-3 text-xs text-slate-500">Variant editing arrives in the next update.</p>
-      </Card>
+      <VariantsCard
+        productId={product.id}
+        salesPrice={toNumber(product.salesPrice)}
+        variants={variants}
+        isAdmin={isAdmin}
+      />
     </div>
   );
 }

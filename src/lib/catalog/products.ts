@@ -6,7 +6,7 @@ import { z } from "zod";
 const MAX_MONEY = 9_999_999_999.99;
 
 // Parses a money input ("1,499.50") into a 2-decimal string Prisma can store as Decimal.
-function money(label: string, required: boolean) {
+export function money(label: string, required: boolean) {
   return z
     .string()
     .trim()
