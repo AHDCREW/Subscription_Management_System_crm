@@ -18,17 +18,23 @@ enum Role {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  name         String   @db.VarChar(120)
-  email        String   @unique @db.VarChar(191)
-  passwordHash String   @db.VarChar(100)
-  role         Role     @default(CUSTOMER)
-  company      String?  @db.VarChar(160)
-  phone        String?  @db.VarChar(40)
-  address      String?  @db.Text
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(120)
+  email        String    @unique @db.VarChar(191)
+  passwordHash String    @db.VarChar(100)
+  role         Role      @default(CUSTOMER)
+  company      String?   @db.VarChar(160)
+  phone        String?   @db.VarChar(40)
+  address      String?   @db.Text
+  // Customers who sign up wait here (null) until an admin or staff member
+  // approves them. Team accounts are always treated as approved.
+  approvedAt   DateTime?
+  approvedById Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
+  approvedBy       User?                @relation("UserApprovals", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvals        User[]               @relation("UserApprovals")
   sessions         Session[]
   resetTokens      PasswordResetToken[]
   subscriptions    Subscription[]       @relation("CustomerSubscriptions")

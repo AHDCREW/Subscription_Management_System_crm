@@ -2,7 +2,8 @@
 //
 //   npm run db:seed        (prisma db seed → tsx prisma/seed.ts)
 //
-// 1. Base data (company, team, taxes, products, plans, discounts, templates)
+// 1. Base data (company, team, two signups waiting for approval, taxes,
+//    products, plans, discounts, templates)
 //    is upserted or created only when missing, so it is safe to re-run.
 // 2. Bulk demo data (~300 customers, 2,000+ subscriptions, their invoices and
 //    payments) is generated once. When the database already holds 2,000 or
@@ -174,12 +175,29 @@ async function ensureTeam(passwordHash: string) {
       await db.user.upsert({
         where: { email: person.email },
         update: {},
-        create: { ...person, passwordHash, createdAt: addDays(today, -300) },
+        create: { ...person, passwordHash, createdAt: addDays(today, -300), approvedAt: addDays(today, -300) },
       }),
     );
   }
   const [admin, ...rest] = saved;
   return { admin, staff: rest.filter((u) => u.role === "STAFF"), kiran: rest.find((u) => u.role === "CUSTOMER")! };
+}
+
+// Two recent signups still waiting for approval, so the queue on
+// /dashboard/customers isn't empty. Dates are fixed offsets (no rand()) so the
+// bulk data generated after this stays the same.
+async function ensurePendingSignups(passwordHash: string) {
+  const people = [
+    { name: "Farah Siddiqui", email: "farah@inkwellstudio.test", company: "Inkwell Studio", createdAt: addHours(addDays(today, -1), 6.5) },
+    { name: "Tenzin Dorje", email: "tenzin@himalayantrails.test", company: "Himalayan Trails", createdAt: minDate(addHours(today, 4), now) },
+  ];
+  for (const person of people) {
+    await db.user.upsert({
+      where: { email: person.email },
+      update: {},
+      create: { ...person, role: "CUSTOMER", passwordHash, approvedAt: null },
+    });
+  }
 }
 
 async function ensureTax(name: string, rate: number) {
@@ -241,6 +259,7 @@ function variantOf(product: ProductWithVariants, value: string) {
 async function seedBase(passwordHash: string) {
   await ensureCompany();
   const team = await ensureTeam(passwordHash);
+  await ensurePendingSignups(passwordHash);
   const gst18 = await ensureTax("GST 18%", 18);
   const gst5 = await ensureTax("GST 5%", 5);
 
@@ -952,6 +971,7 @@ async function seedBulk(base: Base, passwordHash: string) {
       passwordHash,
       createdAt: c.createdAt,
       updatedAt: c.createdAt,
+      approvedAt: c.createdAt,
     })),
     skipDuplicates: true,
   });
