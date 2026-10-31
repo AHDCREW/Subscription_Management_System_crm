@@ -6,6 +6,14 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { productSchema, readProductForm, type ProductField, type ProductFormValues } from "@/lib/catalog/products";
+import {
+  createVariant,
+  deleteVariant,
+  readVariantForm,
+  updateVariant,
+  type VariantField,
+  type VariantFormValues,
+} from "@/lib/catalog/variants";
 
 export type ProductFormState =
   | {
@@ -74,4 +82,53 @@ export async function setProductActive(formData: FormData): Promise<void> {
 
   revalidatePath("/dashboard/products");
   revalidatePath(`/dashboard/products/${id}`);
+}
+
+export type VariantActionState =
+  | {
+      ok?: boolean;
+      message?: string;
+      error?: string;
+      fieldErrors?: Partial<Record<VariantField, string>>;
+      values?: VariantFormValues;
+    }
+  | undefined;
+
+function revalidateVariants(productId: number) {
+  revalidatePath("/dashboard/products");
+  revalidatePath(`/dashboard/products/${productId}`);
+}
+
+// Adds a variant when the form has no variantId, otherwise edits that variant.
+export async function saveVariant(_prev: VariantActionState, formData: FormData): Promise<VariantActionState> {
+  await requireAdmin();
+
+  const values = readVariantForm(formData);
+  const productId = parseId(formData.get("productId"));
+  if (!productId) return { error: "This product could not be found.", values };
+  const rawVariantId = formData.get("variantId");
+  const variantId = rawVariantId ? parseId(rawVariantId) : null;
+  if (rawVariantId && !variantId) return { error: "This variant could not be found.", values };
+
+  const result = variantId ? await updateVariant(productId, variantId, values) : await createVariant(productId, values);
+  if (!result.ok) return { error: result.error, fieldErrors: result.fieldErrors, values };
+
+  revalidateVariants(productId);
+  const name = `${result.variant.attribute}: ${result.variant.value}`;
+  return { ok: true, message: variantId ? `Saved ${name}.` : `Added ${name}.` };
+}
+
+// Refuses (with a reason) when subscription or template lines still use the variant.
+export async function removeVariant(_prev: VariantActionState, formData: FormData): Promise<VariantActionState> {
+  await requireAdmin();
+
+  const productId = parseId(formData.get("productId"));
+  const variantId = parseId(formData.get("variantId"));
+  if (!productId || !variantId) return { error: "This variant could not be found." };
+
+  const result = await deleteVariant(productId, variantId);
+  if (!result.ok) return { error: result.error };
+
+  revalidateVariants(productId);
+  return { ok: true, message: `Deleted ${result.variant.attribute}: ${result.variant.value}.` };
 }
