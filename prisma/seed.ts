@@ -1,13 +1,14 @@
-// Demo data for Brightloop Software.
+// Seed data for Brightloop Software.
 //
-//   npm run db:seed        (prisma db seed → tsx prisma/seed.ts)
+//   npm run db:seed        base data only: company, one admin, one staff member,
+//                          taxes, products, plans, discounts and templates
+//   npm run db:seed:demo   base data plus demo customers and billing history
 //
-// 1. Base data (company, team, two signups waiting for approval, taxes,
-//    products, plans, discounts, templates)
-//    is upserted or created only when missing, so it is safe to re-run.
-// 2. Bulk demo data (~300 customers, 2,000+ subscriptions, their invoices and
-//    payments) is generated once. When the database already holds 2,000 or
-//    more subscriptions the bulk step is skipped, so a second run adds nothing.
+// 1. Base data is upserted or created only when missing, so it is safe to re-run.
+// 2. Demo data (--demo) adds the demo customer Kiran, two signups waiting for
+//    approval and ~300 customers with 2,000+ subscriptions, their invoices and
+//    payments, to show the app at scale. It is generated once: when the database
+//    already holds 2,000 or more subscriptions the bulk step is skipped.
 //
 // Invoices are computed with the real billing engine (calculateInvoice,
 // duePeriods, the same discount rules and usage limits) in the order a daily
@@ -43,6 +44,8 @@ const db = new PrismaClient();
 
 const PASSWORD = "Demo@12345";
 const BULK_SUBSCRIPTION_THRESHOLD = 2000;
+// `npm run db:seed:demo` passes --demo to add customers and billing history.
+const DEMO = process.argv.includes("--demo") || process.env.SEED_DEMO === "1";
 const CUSTOMER_COUNT = 300;
 const BATCH = 1000;
 
@@ -154,33 +157,41 @@ async function ensureCompany() {
   });
 }
 
+// One admin and one staff member. Only the admin adds more staff, from the Staff page.
 async function ensureTeam(passwordHash: string) {
-  const people: { name: string; email: string; role: Role; company?: string; phone?: string; address?: string }[] = [
+  const people: { name: string; email: string; role: Role; phone: string }[] = [
     { name: "Asha Menon", email: "admin@brightloop.test", role: "ADMIN", phone: "+91 98450 10001" },
     { name: "Sameer Khan", email: "staff@brightloop.test", role: "STAFF", phone: "+91 98450 10002" },
-    { name: "Priya Nair", email: "priya@brightloop.test", role: "STAFF", phone: "+91 98450 10003" },
-    { name: "Rahul Verma", email: "rahul@brightloop.test", role: "STAFF", phone: "+91 98450 10004" },
-    {
+  ];
+  const [admin, staff] = await Promise.all(
+    people.map((person) =>
+      db.user.upsert({
+        where: { email: person.email },
+        update: {},
+        create: { ...person, passwordHash, createdAt: addDays(today, -300), approvedAt: addDays(today, -300) },
+      }),
+    ),
+  );
+  return { admin, staff: [staff] };
+}
+
+// Demo data only: the customer from the README, with a billing history.
+async function ensureDemoCustomer(passwordHash: string) {
+  return db.user.upsert({
+    where: { email: "customer@brightloop.test" },
+    update: {},
+    create: {
       name: "Kiran Rao",
       email: "customer@brightloop.test",
       role: "CUSTOMER",
       company: "Kiran Stores",
       phone: "+91 98860 22334",
       address: "14, Commercial Street, Bengaluru, Karnataka 560001",
+      passwordHash,
+      createdAt: addDays(today, -300),
+      approvedAt: addDays(today, -300),
     },
-  ];
-  const saved = [];
-  for (const person of people) {
-    saved.push(
-      await db.user.upsert({
-        where: { email: person.email },
-        update: {},
-        create: { ...person, passwordHash, createdAt: addDays(today, -300), approvedAt: addDays(today, -300) },
-      }),
-    );
-  }
-  const [admin, ...rest] = saved;
-  return { admin, staff: rest.filter((u) => u.role === "STAFF"), kiran: rest.find((u) => u.role === "CUSTOMER")! };
+  });
 }
 
 // Two recent signups still waiting for approval, so the queue on
@@ -259,7 +270,6 @@ function variantOf(product: ProductWithVariants, value: string) {
 async function seedBase(passwordHash: string) {
   await ensureCompany();
   const team = await ensureTeam(passwordHash);
-  await ensurePendingSignups(passwordHash);
   const gst18 = await ensureTax("GST 18%", 18);
   const gst5 = await ensureTax("GST 5%", 5);
 
@@ -943,7 +953,7 @@ function simulateBilling(
   return { drafts, usage };
 }
 
-async function seedBulk(base: Base, passwordHash: string) {
+async function seedBulk(base: Base, passwordHash: string, kiranId: number) {
   const customers = makeCustomers();
   const kiranPayer: PayerProfile = "good";
   const subs = generateSubscriptions(base, customers, kiranPayer);
@@ -996,7 +1006,7 @@ async function seedBulk(base: Base, passwordHash: string) {
     subs,
     discountRules,
     customerIds,
-    base.team.kiran.id,
+    kiranId,
     settings?.invoiceTag ?? "INV",
     invoiceIdStart,
   );
@@ -1013,7 +1023,7 @@ async function seedBulk(base: Base, passwordHash: string) {
         data: group.map((sub) => ({
           id: sub.id,
           number: subscriptionNumber(sub.id),
-          customerId: sub.customer === -1 ? base.team.kiran.id : customerIds[sub.customer],
+          customerId: sub.customer === -1 ? kiranId : customerIds[sub.customer],
           planId: planIds[sub.plan],
           templateId: sub.templateId,
           salespersonId: sub.salespersonId,
@@ -1084,7 +1094,7 @@ async function printSummary(startedAt: number) {
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(toNumber(value as number));
   const line = (label: string, value: string | number) => console.log(`  ${label.padEnd(22)} ${value}`);
 
-  console.log("\nBrightloop demo data");
+  console.log(DEMO ? "\nBrightloop demo data" : "\nBrightloop base data");
   for (const r of roles) line(`Users (${r.role.toLowerCase()})`, r._count._all);
   for (const s of subs) line(`Subscriptions ${s.status.toLowerCase()}`, s._count._all);
   for (const i of invoices) line(`Invoices ${i.status.toLowerCase()}`, `${i._count._all}  (${money(i._sum.total)})`);
@@ -1102,11 +1112,19 @@ async function main() {
   const passwordHash = await bcrypt.hash(PASSWORD, 10);
   const base = await seedBase(passwordHash);
 
+  if (!DEMO) {
+    console.log("Base data only. Run `npm run db:seed:demo` to add demo customers and billing history.");
+    await printSummary(startedAt);
+    return;
+  }
+
+  const kiran = await ensureDemoCustomer(passwordHash);
+  await ensurePendingSignups(passwordHash);
   const existing = await db.subscription.count();
   if (existing >= BULK_SUBSCRIPTION_THRESHOLD) {
     console.log(`Found ${existing} subscriptions already; skipping bulk demo data.`);
   } else {
-    const created = await seedBulk(base, passwordHash);
+    const created = await seedBulk(base, passwordHash, kiran.id);
     console.log(
       `Created ${created.customers} customers, ${created.subscriptions} subscriptions and ${created.invoices} invoices.`,
     );
