@@ -91,11 +91,11 @@ export default async function TemplatesPage() {
             );
             const used = template._count.subscriptions;
             return (
-              <tr key={template.id} className="hover:bg-slate-50">
+              <tr key={template.id} className="hover:bg-muted/50">
                 <Td>
                   <Link
                     href={`/dashboard/templates/${template.id}`}
-                    className="font-medium text-slate-900 hover:text-indigo-600"
+                    className="font-medium text-foreground hover:text-primary"
                   >
                     {template.name}
                   </Link>
@@ -103,7 +103,7 @@ export default async function TemplatesPage() {
                 <Td>
                   <div className="flex flex-wrap items-center gap-2">
                     <span>{template.plan.name}</span>
-                    <Badge tone="indigo">{PERIOD_LABEL[template.plan.billingPeriod]}</Badge>
+                    <Badge tone="outline">{PERIOD_LABEL[template.plan.billingPeriod]}</Badge>
                     {!template.plan.active && <Badge tone="amber">Plan inactive</Badge>}
                   </div>
                 </Td>
@@ -113,13 +113,13 @@ export default async function TemplatesPage() {
                 </Td>
                 <Td className="text-right tabular-nums">
                   {formatMoney(total)}
-                  <span className="text-slate-500"> / {PERIOD_UNIT[template.plan.billingPeriod]}</span>
+                  <span className="text-muted-foreground"> / {PERIOD_UNIT[template.plan.billingPeriod]}</span>
                 </Td>
                 <Td className="text-right tabular-nums">
                   {used} subscription{used === 1 ? "" : "s"}
                 </Td>
                 <Td className="text-right">
-                  <Link href={`/dashboard/templates/${template.id}`} className="text-indigo-600 hover:underline">
+                  <Link href={`/dashboard/templates/${template.id}`} className="text-primary hover:underline">
                     Edit
                   </Link>
                 </Td>
@@ -128,7 +128,7 @@ export default async function TemplatesPage() {
           })}
         </tbody>
       </Table>
-      <p className="mt-3 text-xs text-slate-500">
+      <p className="mt-3 text-xs text-muted-foreground">
         Estimated total = plan price (base fee) + quantity × (product price + variant extra) for each line, before tax and
         discounts.
       </p>

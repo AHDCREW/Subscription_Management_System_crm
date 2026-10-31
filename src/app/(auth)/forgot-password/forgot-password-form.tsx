@@ -29,9 +29,9 @@ export function ForgotPasswordForm() {
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? "Sending link…" : state?.sent ? "Send again" : "Send reset link"}
         </Button>
-        <p className="text-center text-sm text-slate-500">
+        <p className="text-center text-sm text-muted-foreground">
           Remembered it?{" "}
-          <Link href="/login" className="text-indigo-600 hover:underline">
+          <Link href="/login" className="text-primary hover:underline">
             Back to log in
           </Link>
         </p>

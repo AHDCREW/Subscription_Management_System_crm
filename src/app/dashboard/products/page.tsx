@@ -55,7 +55,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/dashboa
       <PageHeader
         title="Products"
         description={isAdmin ? "Everything Brightloop sells." : "Everything Brightloop sells. View only."}
-        actions={isAdmin && <ButtonLink href="/dashboard/products/new">New product</ButtonLink>}
+        actions={isAdmin && (products.length > 0 || filtered) && <ButtonLink href="/dashboard/products/new">New product</ButtonLink>}
       />
 
       <Form action="/dashboard/products" className="mb-4 flex flex-wrap items-center gap-2">
@@ -103,9 +103,9 @@ export default async function ProductsPage({ searchParams }: PageProps<"/dashboa
               {products.map((p) => {
                 const info = productTypeInfo(p.type);
                 return (
-                  <tr key={p.id} className="hover:bg-slate-50">
+                  <tr key={p.id} className="hover:bg-muted/50">
                     <Td>
-                      <Link href={`/dashboard/products/${p.id}`} className="font-medium text-indigo-600 hover:underline">
+                      <Link href={`/dashboard/products/${p.id}`} className="font-medium text-primary hover:underline">
                         {p.name}
                       </Link>
                     </Td>
@@ -114,7 +114,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/dashboa
                     </Td>
                     <Td className="text-right tabular-nums">{formatMoney(p.salesPrice)}</Td>
                     <Td className="text-right tabular-nums">{formatMoney(p.costPrice)}</Td>
-                    <Td>{p.tax ? taxLabel(p.tax) : <span className="text-slate-400">—</span>}</Td>
+                    <Td>{p.tax ? taxLabel(p.tax) : <span className="text-muted-foreground/60">—</span>}</Td>
                     <Td className="text-right tabular-nums">{p._count.variants}</Td>
                     <Td>{p.active ? <Badge tone="green">Active</Badge> : <Badge>Inactive</Badge>}</Td>
                   </tr>
@@ -123,7 +123,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/dashboa
             </tbody>
           </Table>
 
-          <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
+          <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
             <p>
               Showing {(page - 1) * PRODUCTS_PAGE_SIZE + 1}–{(page - 1) * PRODUCTS_PAGE_SIZE + products.length} of {total}
             </p>

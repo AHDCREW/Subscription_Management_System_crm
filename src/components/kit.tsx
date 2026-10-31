@@ -108,20 +108,47 @@ export function PageHeader({ title, description, actions }: { title: string; des
   );
 }
 
+// Second level of the type scale: titles inside cards and page sections.
+export function SectionHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
+  return (
+    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h2 className="text-base font-semibold">{title}</h2>
+        {description && <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>}
+      </div>
+      {actions && <div className="flex gap-2">{actions}</div>}
+    </div>
+  );
+}
+
+// Label/value pairs for detail pages: label is meta (xs, muted), value is body text.
+export function DetailItem({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-sm">{children}</dd>
+    </div>
+  );
+}
+
+// Colour roles (see docs/UI_GUIDELINES.md). Each tone has one meaning everywhere:
+// gray = draft/neutral, blue = in progress, indigo = confirmed/committed, green = success/active/paid,
+// amber = needs attention, red = overdue/failed, outline = categories (not a status).
 const badgeTones = {
   gray: "bg-muted text-muted-foreground",
-  blue: "bg-blue-500/10 text-blue-700",
+  blue: "bg-info/10 text-info",
   indigo: "bg-primary/10 text-primary",
-  green: "bg-emerald-500/10 text-emerald-700",
-  amber: "bg-amber-500/15 text-amber-800",
+  green: "bg-success/10 text-success",
+  amber: "bg-warning/10 text-warning",
   red: "bg-destructive/10 text-destructive",
+  outline: "border-border bg-transparent text-foreground",
 };
 
 export type BadgeTone = keyof typeof badgeTones;
 
 export function Badge({ tone = "gray", children }: { tone?: BadgeTone; children: ReactNode }) {
   return (
-    <UIBadge variant="secondary" className={cn("border-transparent font-medium", badgeTones[tone])}>
+    <UIBadge variant="secondary" className={cn("font-medium", tone === "outline" ? "border" : "border-transparent", badgeTones[tone])}>
       {children}
     </UIBadge>
   );
@@ -160,10 +187,13 @@ export function Alert({ tone = "red", children }: { tone?: "red" | "green"; chil
   return (
     <UIAlert
       variant={tone === "red" ? "destructive" : "default"}
-      className={cn("animate-in fade-in slide-in-from-top-1 duration-300", tone === "green" && "text-emerald-700")}
+      className={cn(
+        "animate-in fade-in slide-in-from-top-1 duration-300",
+        tone === "green" && "border-success/30 bg-success/5 text-success",
+      )}
     >
       <Icon />
-      <AlertDescription className={tone === "green" ? "text-emerald-700" : undefined}>{children}</AlertDescription>
+      <AlertDescription className={tone === "green" ? "text-success" : undefined}>{children}</AlertDescription>
     </UIAlert>
   );
 }

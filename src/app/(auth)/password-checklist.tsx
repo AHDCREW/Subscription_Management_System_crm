@@ -21,7 +21,7 @@ export function PasswordChecklist({ password }: { password: string }) {
             key={rule.id}
             className={cx(
               "flex items-center gap-2 transition-colors duration-300",
-              met ? "text-emerald-600" : "text-muted-foreground",
+              met ? "text-success" : "text-muted-foreground",
             )}
           >
             <Icon aria-hidden className={cx("size-3.5 transition-transform duration-300", met && "scale-110")} />
