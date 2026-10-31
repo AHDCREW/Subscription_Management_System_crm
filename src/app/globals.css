@@ -11,7 +11,8 @@
 }
 
 @theme inline {
-  --font-heading: var(--font-sora), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-caveat), var(--font-inter), cursive;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -32,9 +33,11 @@
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-brand: var(--brand);
-  --color-navy: var(--navy);
-  --color-electric: var(--electric);
-  --color-soft-blue: var(--soft-blue);
+  --color-plum: var(--plum);
+  --color-plum-dark: var(--plum-dark);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-stone: var(--stone);
   --color-canvas: var(--canvas);
   --color-success: var(--success);
   --color-warning: var(--warning);
@@ -63,56 +66,58 @@
 }
 
 :root {
-  /* ROOT brand (see the brand kit): Deep Navy primary, Electric Blue accent, Soft Blue secondary,
-     Cool Light Gray surfaces, Dark Charcoal text.
+  /* Brand from the Brightloop brief (Odoo hackathon): Odoo purple primary, Odoo grey,
+     yellow highlighter strokes behind headings, Caveat for display headings, Inter for text.
      canvas = outer app background; sidebar = app frame; card/background = white content panels. */
-  --navy: #102a4d;
-  --electric: #0077c8;
-  --soft-blue: #8cc4ee;
-  --canvas: #e8edf4;
+  --plum: #714b67;
+  --plum-dark: #4f3149;
+  --sun: #fbb130;
+  --sun-soft: #fdd68a;
+  --stone: #8f8f8f;
+  --canvas: #efedee;
   --background: #ffffff;
-  --foreground: #1c2230;
+  --foreground: #212529;
   --card: #ffffff;
-  --card-foreground: #1c2230;
+  --card-foreground: #212529;
   --popover: #ffffff;
-  --popover-foreground: #1c2230;
-  --primary: #102a4d;
+  --popover-foreground: #212529;
+  --primary: #714b67;
   --primary-foreground: #ffffff;
-  --secondary: #f2f5f9;
-  --secondary-foreground: #102a4d;
-  --muted: #f2f5f9;
-  --muted-foreground: #5b6478;
-  --accent: #eaf0f7;
-  --accent-foreground: #102a4d;
-  /* Brand accent (Electric Blue): logo, links, focus rings and small highlights. */
-  --brand: #0077c8;
+  --secondary: #f6f4f5;
+  --secondary-foreground: #4f3149;
+  --muted: #f6f4f5;
+  --muted-foreground: #6b6570;
+  --accent: #f3edf2;
+  --accent-foreground: #4f3149;
+  /* Brand accent (Odoo purple): logo, links, focus rings. Yellow (--sun) is for highlights only. */
+  --brand: #714b67;
   /* Semantic status colours: dots and text use the token, surfaces use it at /10 */
-  --destructive: #c8323c;
-  --success: #12805c;
-  --warning: #b86e00;
-  --info: #0077c8;
-  --border: #e3e8f0;
-  --input: #d6deea;
-  --ring: #0077c8;
-  --chart-1: #102a4d;
-  --chart-2: #0077c8;
-  --chart-3: #8cc4ee;
-  --chart-4: #12805c;
-  --chart-5: #c9d3e0;
+  --destructive: #c0392b;
+  --success: #1e8a4c;
+  --warning: #b7791f;
+  --info: #017e84;
+  --border: #e6e1e4;
+  --input: #d9d2d7;
+  --ring: #714b67;
+  --chart-1: #714b67;
+  --chart-2: #fbb130;
+  --chart-3: #017e84;
+  --chart-4: #1e8a4c;
+  --chart-5: #cbc3c8;
   --radius: 0.625rem;
-  --sidebar: #f6f8fb;
-  --sidebar-foreground: #1c2230;
-  --sidebar-primary: #102a4d;
+  --sidebar: #f8f7f8;
+  --sidebar-foreground: #212529;
+  --sidebar-primary: #714b67;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e6ecf4;
-  --sidebar-accent-foreground: #102a4d;
-  --sidebar-border: #e3e8f0;
-  --sidebar-ring: #0077c8;
+  --sidebar-accent: #efe8ee;
+  --sidebar-accent-foreground: #4f3149;
+  --sidebar-border: #e6e1e4;
+  --sidebar-ring: #714b67;
 }
 
 .dark {
-  --canvas: #0a1a30;
-  --brand: #8cc4ee;
+  --canvas: #1c1519;
+  --brand: #fbb130;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -165,4 +170,27 @@
   h1, h2, h3 {
     @apply font-heading;
   }
+}
+
+/* Yellow highlighter stroke behind a heading, as in the brief. Wrap the words in <span class="marker">. */
+@utility marker {
+  padding-inline: 0.3em;
+  margin-inline: -0.15em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath fill='%23FBB130' d='M4 7Q40 3 100 5T196 4L194 13L199 21L195 33Q140 37 100 35T5 36L8 27L1 19L6 12Z'/%3E%3C/svg%3E");
+  background-size: 100% 78%;
+  background-position: 0 70%;
+  background-repeat: no-repeat;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+@utility marker-soft {
+  padding-inline: 0.3em;
+  margin-inline: -0.15em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath fill='%23FDD68A' d='M4 7Q40 3 100 5T196 4L194 13L199 21L195 33Q140 37 100 35T5 36L8 27L1 19L6 12Z'/%3E%3C/svg%3E");
+  background-size: 100% 78%;
+  background-position: 0 70%;
+  background-repeat: no-repeat;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }

@@ -41,7 +41,7 @@ export function GlowCard({ children, className, featured = false }: { children: 
       className={cn(
         "relative overflow-hidden rounded-xl border p-5 shadow-xs",
         featured
-          ? "border-primary bg-[linear-gradient(160deg,#1b3b66,#102a4d_70%)] text-primary-foreground shadow-md"
+          ? "border-primary bg-[linear-gradient(160deg,#7d5573,#4f3149_70%)] text-primary-foreground shadow-md"
           : "bg-card",
         className,
       )}
