@@ -2,12 +2,15 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  canCancelInvoice,
+  canConfirmInvoice,
   dueDateFor,
   formatInvoiceNumber,
   invoiceLineDescription,
   isInvoiceOverdue,
   lastDayOfPeriod,
   outstandingAmount,
+  paymentTermsLabel,
   startOfTomorrow,
   toDiscountRule,
 } from "./index";
@@ -109,5 +112,29 @@ describe("discount rows", () => {
     assert.equal(rule.minPurchase, null);
     assert.deepEqual(rule.productIds, [7, 9]);
     assert.equal(toDiscountRule({ ...row, minPurchase: "500" }).minPurchase, 500);
+  });
+});
+
+describe("invoice actions", () => {
+  it("confirms drafts only", () => {
+    assert.equal(canConfirmInvoice("DRAFT"), true);
+    assert.equal(canConfirmInvoice("CONFIRMED"), false);
+    assert.equal(canConfirmInvoice("PAID"), false);
+    assert.equal(canConfirmInvoice("CANCELLED"), false);
+  });
+
+  it("cancels drafts and confirmed invoices with nothing paid", () => {
+    assert.equal(canCancelInvoice({ status: "DRAFT", amountPaid: "0.00" }), true);
+    assert.equal(canCancelInvoice({ status: "CONFIRMED", amountPaid: 0 }), true);
+    assert.equal(canCancelInvoice({ status: "CONFIRMED", amountPaid: "10.00" }), false);
+    assert.equal(canCancelInvoice({ status: "CONFIRMED", amountPaid: 0 }, 1), false);
+    assert.equal(canCancelInvoice({ status: "PAID", amountPaid: 0 }), false);
+    assert.equal(canCancelInvoice({ status: "CANCELLED", amountPaid: 0 }), false);
+  });
+
+  it("describes payment terms", () => {
+    assert.equal(paymentTermsLabel(0), "Due on receipt");
+    assert.equal(paymentTermsLabel(1), "Net 1 day");
+    assert.equal(paymentTermsLabel(30), "Net 30 days");
   });
 });

@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Printer, Send, XCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDate, formatMoney, round2, toNumber } from "@/lib/money";
-import { isInvoiceOverdue, lastDayOfPeriod, outstandingAmount } from "@/lib/billing";
-import { Button, Card, PageHeader, Table, Td, Th } from "@/components/kit";
+import { canCancelInvoice, canConfirmInvoice, isInvoiceOverdue, lastDayOfPeriod, outstandingAmount } from "@/lib/billing";
+import { Card, PageHeader, Table, Td, Th } from "@/components/kit";
 import { FadeIn } from "@/components/motion";
 import { Separator } from "@/components/ui/separator";
 import { InvoiceStatusBadge, OverdueBadge } from "../status";
+import { InvoiceActions } from "./invoice-actions";
 
 function formatRate(rate: number) {
   return `${Number.isInteger(rate) ? rate : rate.toFixed(2)}%`;
@@ -27,6 +28,7 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
         customer: { select: { name: true, email: true, company: true, phone: true, address: true } },
         subscription: { select: { number: true, plan: { select: { name: true, billingPeriod: true } } } },
         lines: { orderBy: { id: "asc" } },
+        _count: { select: { payments: true } },
       },
     }),
     db.companySettings.findUnique({ where: { id: 1 } }),
@@ -191,26 +193,14 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
             </dl>
           </Card>
 
-          <Card className="border-dashed p-5">
-            <p className="text-sm font-medium">Actions</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Confirm, cancel, send, print and payments arrive in the next phase.
-            </p>
-            <div className="mt-4 grid gap-2">
-              <Button variant="secondary" disabled>
-                <CheckCircle2 className="size-4" aria-hidden /> Confirm
-              </Button>
-              <Button variant="secondary" disabled>
-                <Send className="size-4" aria-hidden /> Send
-              </Button>
-              <Button variant="secondary" disabled>
-                <Printer className="size-4" aria-hidden /> Print
-              </Button>
-              <Button variant="ghost" disabled>
-                <XCircle className="size-4" aria-hidden /> Cancel invoice
-              </Button>
-            </div>
-          </Card>
+          <InvoiceActions
+            id={invoice.id}
+            number={invoice.number}
+            status={invoice.status}
+            canConfirm={canConfirmInvoice(invoice.status)}
+            canCancel={canCancelInvoice(invoice, invoice._count.payments)}
+            hasPayments={invoice._count.payments > 0 || toNumber(invoice.amountPaid) > 0}
+          />
         </FadeIn>
       </div>
     </>
