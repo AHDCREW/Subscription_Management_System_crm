@@ -94,3 +94,24 @@ export function toDiscountRule(discount: {
     active: discount.active,
   };
 }
+
+/** Only a draft can be confirmed. */
+export function canConfirmInvoice(status: InvoiceStatusValue): boolean {
+  return status === "DRAFT";
+}
+
+/** A draft or confirmed invoice can be cancelled while nothing has been paid against it. */
+export function canCancelInvoice(invoice: { status: InvoiceStatusValue; amountPaid: Numeric }, paymentCount = 0): boolean {
+  return (
+    (invoice.status === "DRAFT" || invoice.status === "CONFIRMED") &&
+    toNumber(invoice.amountPaid) === 0 &&
+    paymentCount === 0
+  );
+}
+
+/** Payment terms in words: "Due on receipt" or "Net 15 days". */
+export function paymentTermsLabel(days: number): string {
+  const n = Math.max(0, Math.trunc(days || 0));
+  if (n === 0) return "Due on receipt";
+  return `Net ${n} day${n === 1 ? "" : "s"}`;
+}

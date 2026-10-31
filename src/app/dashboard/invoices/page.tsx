@@ -160,7 +160,7 @@ export default async function InvoicesPage({ searchParams }: PageProps<"/dashboa
         />
       </div>
 
-      <BillingRunPanel initial={getLastBillingRun()} />
+      <BillingRunPanel initial={getLastBillingRun()} draftCount={draftCount} />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <Tabs value={filter}>

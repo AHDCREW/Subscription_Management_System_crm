@@ -1,11 +1,74 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CalendarClock, Loader2, Play } from "lucide-react";
+import { CalendarClock, CheckCheck, Loader2, Play } from "lucide-react";
 import { toast } from "sonner";
 import type { BillingRunSummary } from "@/lib/billing/run";
 import { Button } from "@/components/kit";
-import { runBillingNow } from "./actions";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { confirmAllDrafts, runBillingNow } from "./actions";
+
+function invoices(n: number) {
+  return `${n} invoice${n === 1 ? "" : "s"}`;
+}
+
+/** Confirms every draft invoice at once, after a confirm dialog showing how many. */
+export function ConfirmAllDraftsButton({ count }: { count: number }) {
+  const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  function confirmAll() {
+    startTransition(async () => {
+      try {
+        const { confirmed } = await confirmAllDrafts();
+        if (confirmed === 0) toast.info("No draft invoices to confirm");
+        else toast.success(`${invoices(confirmed)} confirmed`);
+        setOpen(false);
+      } catch {
+        toast.error("Could not confirm the drafts. Please try again.");
+      }
+    });
+  }
+
+  return (
+    <>
+      <Button type="button" variant="secondary" onClick={() => setOpen(true)} disabled={count === 0 || pending}>
+        <CheckCheck className="size-4" aria-hidden />
+        Confirm all drafts
+      </Button>
+      <Dialog open={open} onOpenChange={(next) => !pending && setOpen(next)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm all draft invoices?</DialogTitle>
+            <DialogDescription>
+              {invoices(count)} will move from Draft to Confirmed and become payable. Drafts created after this page loaded
+              are included too.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="ghost" disabled={pending}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="button" onClick={confirmAll} disabled={pending}>
+              {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
+              {pending ? "Confirming…" : `Confirm ${invoices(count)}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 function describe(summary: BillingRunSummary) {
   const parts = [
@@ -57,7 +120,7 @@ function Metric({ label, value, tone }: { label: string; value: number; tone?: "
 }
 
 /** Header action plus the "last run" panel, sharing the latest result. */
-export function BillingRunPanel({ initial }: { initial: BillingRunSummary | null }) {
+export function BillingRunPanel({ initial, draftCount }: { initial: BillingRunSummary | null; draftCount: number }) {
   const [summary, setSummary] = useState(initial);
 
   return (
@@ -75,7 +138,10 @@ export function BillingRunPanel({ initial }: { initial: BillingRunSummary | null
             </p>
           </div>
         </div>
-        <RunBillingButton onDone={setSummary} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ConfirmAllDraftsButton count={draftCount} />
+          <RunBillingButton onDone={setSummary} />
+        </div>
       </div>
 
       {summary && (
