@@ -46,11 +46,13 @@ export function NavLink({
   children,
   exact = false,
   icon,
+  badge,
 }: {
   href: string;
   children: React.ReactNode;
   exact?: boolean;
   icon?: string;
+  badge?: number;
   variant?: "sidebar" | "top";
 }) {
   const pathname = usePathname();
@@ -70,6 +72,12 @@ export function NavLink({
     >
       {Icon && <Icon className={cn("size-[18px] shrink-0", active ? "text-foreground" : "text-foreground/60")} strokeWidth={1.75} aria-hidden />}
       {children}
+      {badge ? (
+        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-sun px-1.5 text-[11px] font-semibold text-foreground tabular-nums ring-2 ring-sidebar animate-in zoom-in-50 duration-300">
+          <span aria-hidden>{badge > 99 ? "99+" : badge}</span>
+          <span className="sr-only">{badge} new</span>
+        </span>
+      ) : null}
     </Link>
   );
 }
