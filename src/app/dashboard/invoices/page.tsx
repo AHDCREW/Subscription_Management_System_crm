@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Form from "next/form";
+import { MailCheck } from "lucide-react";
 import type { InvoiceStatus, Prisma } from "@prisma/client";
 import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -10,6 +11,7 @@ import { Button, ButtonLink, EmptyState, Input, PageHeader, Table, Td, Th } from
 import { StatCard } from "@/components/motion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BillingRunPanel } from "./run-billing";
+import { RemindAllOverdueButton } from "./remind-overdue";
 import { InvoiceStatusBadge, OverdueBadge } from "./status";
 
 const PAGE_SIZE = 25;
@@ -103,6 +105,7 @@ export default async function InvoicesPage({ searchParams }: PageProps<"/dashboa
       dueDate: true,
       total: true,
       amountPaid: true,
+      sentAt: true,
       customer: { select: { name: true, company: true } },
       subscription: { select: { id: true, number: true } },
     },
@@ -177,25 +180,28 @@ export default async function InvoicesPage({ searchParams }: PageProps<"/dashboa
           </TabsList>
         </Tabs>
 
-        <Form action="/dashboard/invoices" className="flex items-center gap-2">
-          {filter !== "all" && <input type="hidden" name="status" value={filter} />}
-          <Input
-            name="q"
-            type="search"
-            placeholder="Search number, customer, subscription…"
-            defaultValue={q}
-            className="w-72"
-            aria-label="Search invoices"
-          />
-          <Button type="submit" variant="secondary">
-            Search
-          </Button>
-          {q && (
-            <ButtonLink href={filter === "all" ? "/dashboard/invoices" : `/dashboard/invoices?status=${filter}`} variant="ghost">
-              Clear
-            </ButtonLink>
-          )}
-        </Form>
+        <div className="flex flex-wrap items-center gap-2">
+          {filter === "overdue" && <RemindAllOverdueButton count={overdue._count} />}
+          <Form action="/dashboard/invoices" className="flex items-center gap-2">
+            {filter !== "all" && <input type="hidden" name="status" value={filter} />}
+            <Input
+              name="q"
+              type="search"
+              placeholder="Search number, customer, subscription…"
+              defaultValue={q}
+              className="w-72"
+              aria-label="Search invoices"
+            />
+            <Button type="submit" variant="secondary">
+              Search
+            </Button>
+            {q && (
+              <ButtonLink href={filter === "all" ? "/dashboard/invoices" : `/dashboard/invoices?status=${filter}`} variant="ghost">
+                Clear
+              </ButtonLink>
+            )}
+          </Form>
+        </div>
       </div>
 
       {invoices.length === 0 ? (
@@ -230,6 +236,14 @@ export default async function InvoicesPage({ searchParams }: PageProps<"/dashboa
                       <Link href={`/dashboard/invoices/${invoice.id}`} className="font-medium text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
                         {invoice.number}
                       </Link>
+                      {invoice.sentAt && (
+                        <div
+                          className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground"
+                          title={`Sent to the customer on ${formatDate(invoice.sentAt)}`}
+                        >
+                          <MailCheck className="size-3" aria-hidden /> Sent
+                        </div>
+                      )}
                     </Td>
                     <Td>
                       <div className="font-medium">{invoice.customer.name}</div>

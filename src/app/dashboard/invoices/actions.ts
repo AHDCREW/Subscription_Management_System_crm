@@ -7,6 +7,7 @@ import type { BillingRunSummary } from "@/lib/billing/run";
 import { runAndRecordBilling } from "@/lib/jobs/billing-job";
 import { recordPayment } from "@/lib/billing/record-payment";
 import type { PaymentFieldErrors } from "@/lib/billing/payment";
+import { sendInvoice, sendOverdueReminder, sendOverdueReminders } from "@/lib/billing/send-invoice";
 
 export type RunBillingNowResult = BillingRunSummary | { inProgress: true; message: string };
 
@@ -110,4 +111,31 @@ export async function recordInvoicePayment(invoiceId: number, formData: FormData
     ok: true,
     message: result.status === "PAID" ? `Payment recorded. ${result.invoiceNumber} is now paid.` : "Payment recorded",
   };
+}
+
+/** Emails a confirmed or paid invoice to the customer and stamps sentAt. */
+export async function sendInvoiceToCustomer(id: number): Promise<InvoiceActionResult> {
+  await requireTeam();
+  if (!validId(id)) return { ok: false, error: "Invoice not found." };
+
+  const result = await sendInvoice(id);
+  if (!result.ok) return result;
+  revalidateInvoice(id);
+  return { ok: true, message: `Invoice sent to ${result.to}` };
+}
+
+/** Emails a friendly payment reminder for one overdue invoice. */
+export async function sendInvoiceReminder(id: number): Promise<InvoiceActionResult> {
+  await requireTeam();
+  if (!validId(id)) return { ok: false, error: "Invoice not found." };
+
+  const result = await sendOverdueReminder(id);
+  if (!result.ok) return result;
+  return { ok: true, message: `Reminder sent to ${result.to}` };
+}
+
+/** "Remind all overdue": one reminder per overdue invoice, sent one after another; failures don't stop the rest. */
+export async function remindAllOverdue(): Promise<{ sent: number; failed: number }> {
+  await requireTeam();
+  return sendOverdueReminders();
 }
