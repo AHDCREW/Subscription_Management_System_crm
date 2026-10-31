@@ -167,6 +167,12 @@
   html {
     @apply font-sans;
   }
+  /* Smooth jumps for in-page links (the landing page menu), unless the user prefers less motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
   h1, h2, h3 {
     @apply font-heading;
   }
