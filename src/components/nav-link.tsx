@@ -61,14 +61,14 @@ export function NavLink({
         "group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
         variant === "sidebar" && "hover:translate-x-0.5",
         active
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          ? "bg-sidebar-accent text-foreground"
+          : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
       )}
     >
-      {Icon && <Icon className="size-4 shrink-0" aria-hidden />}
+      {Icon && <Icon className={cn("size-4 shrink-0", active && "text-brand")} aria-hidden />}
       {children}
       {active && variant === "sidebar" && (
-        <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-primary animate-in fade-in zoom-in-50" />
+        <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-brand animate-in fade-in zoom-in-50" />
       )}
     </Link>
   );

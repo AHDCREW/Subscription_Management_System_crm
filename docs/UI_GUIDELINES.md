@@ -8,8 +8,9 @@ Each colour has **one meaning** across the whole app. Use theme tokens only. Nev
 
 | Role | Token | Use for | Never for |
 |---|---|---|---|
-| **Primary** (indigo) | `primary` | The main action on a screen, active nav item, links, focus ring, "Confirmed" | Decoration, categories, counts |
-| **Neutral** | `foreground`, `muted-foreground`, `muted`, `border` | Text, surfaces, dividers, drafts, categories | — |
+| **Primary** (ink) | `primary` | The main action on a screen, "Confirmed" | Decoration, categories, counts |
+| **Brand** (signal orange) | `brand` | Logo mark, active nav marker and icon, focus ring. Sparingly, a few pixels per screen | Buttons, text, status, backgrounds |
+| **Neutral** (warm paper) | `foreground`, `muted-foreground`, `muted`, `border` | Text, surfaces, dividers, drafts, categories | — |
 | **Success** (green) | `success` | Active, paid, completed, "rule met" | Buttons |
 | **Info** (blue) | `info` | In progress, quotation sent | — |
 | **Warning** (amber) | `warning` | Needs attention soon: paused, expiring, inactive dependency | Errors |
@@ -17,11 +18,13 @@ Each colour has **one meaning** across the whole app. Use theme tokens only. Nev
 
 Surfaces use the token at low opacity (`bg-success/10 text-success`). Text uses the token directly.
 
+Palette is "ink & paper": warm off-white background, white cards, ink-black text and primary buttons, muted earthy status colours. **No gradients, glows, coloured shadows or purple/indigo tints.** Cards are flat (border, no shadow). Links are ink text with a quiet underline (`underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground`), not coloured text.
+
 ### Status colours
 
 | Thing | Status → badge `tone` |
 |---|---|
-| Subscription | Draft → `gray` · Quotation → `blue` · Confirmed → `indigo` · Active → `green` · Paused → `amber` · Closed → `gray` |
+| Subscription | Draft → `gray` · Quotation → `blue` · Confirmed → `indigo` (ink) · Active → `green` · Paused → `amber` · Closed → `gray` |
 | Invoice | Draft → `gray` · Confirmed → `indigo` · Paid → `green` · Cancelled → `gray` · **Overdue → `red`** |
 | Product / plan | Active → `green` · Inactive → `gray` (`<Badge>`) |
 | Categories (product type, billing period) | `outline`, never a status colour |

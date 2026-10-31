@@ -194,7 +194,7 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
                     <Td>
                       <Link
                         href={`/dashboard/subscriptions/${sub.id}`}
-                        className="font-medium text-primary tabular-nums hover:underline"
+                        className="font-medium tabular-nums underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground"
                       >
                         {sub.number}
                       </Link>

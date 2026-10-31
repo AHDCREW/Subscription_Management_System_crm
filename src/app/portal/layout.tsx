@@ -7,7 +7,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="no-print sticky top-0 z-10 border-b bg-background/80 backdrop-blur animate-in fade-in slide-in-from-top-2 duration-500">
+      <header className="no-print sticky top-0 z-10 border-b bg-background animate-in fade-in slide-in-from-top-2 duration-500">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-3">
           <div>
             <p className="text-base font-semibold tracking-tight">Brightloop Software</p>

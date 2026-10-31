@@ -95,7 +95,7 @@ export default async function TemplatesPage() {
                 <Td>
                   <Link
                     href={`/dashboard/templates/${template.id}`}
-                    className="font-medium text-foreground hover:text-primary"
+                    className="font-medium text-foreground hover:underline hover:underline-offset-4"
                   >
                     {template.name}
                   </Link>
@@ -119,7 +119,7 @@ export default async function TemplatesPage() {
                   {used} subscription{used === 1 ? "" : "s"}
                 </Td>
                 <Td className="text-right">
-                  <Link href={`/dashboard/templates/${template.id}`} className="text-primary hover:underline">
+                  <Link href={`/dashboard/templates/${template.id}`} className="text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
                     Edit
                   </Link>
                 </Td>

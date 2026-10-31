@@ -45,7 +45,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
 
   return (
     <div className="flex min-h-screen">
-      <aside className="no-print sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r bg-background/80 backdrop-blur animate-in fade-in slide-in-from-left-4 duration-500">
+      <aside className="no-print sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r bg-sidebar animate-in fade-in slide-in-from-left-4 duration-500">
         <div className="px-5 py-5">
           <Brand subtitle="Brightloop Software" />
         </div>
