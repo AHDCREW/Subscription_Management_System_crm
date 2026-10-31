@@ -2,7 +2,7 @@
 
 import { useActionState, type FormEvent } from "react";
 import { deleteTemplate } from "./actions";
-import { Alert, Button } from "@/components/ui";
+import { Alert, Button } from "@/components/kit";
 
 export function DeleteTemplateButton({ id, name }: { id: number; name: string }) {
   const [state, action, pending] = useActionState(deleteTemplate, undefined);

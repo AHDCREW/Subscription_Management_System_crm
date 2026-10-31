@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
-import { PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/kit";
 import { ProductForm } from "../product-form";
 import { taxOptions } from "../tax-options";
 

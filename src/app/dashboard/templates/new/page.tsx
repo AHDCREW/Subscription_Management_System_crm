@@ -1,5 +1,5 @@
 import { requireTeam } from "@/lib/auth";
-import { ButtonLink, EmptyState, PageHeader } from "@/components/ui";
+import { ButtonLink, EmptyState, PageHeader } from "@/components/kit";
 import { getTemplateFormOptions } from "../data";
 import { TemplateForm } from "../template-form";
 

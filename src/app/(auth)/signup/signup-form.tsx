@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { signup } from "../actions";
 import { PASSWORD_RULES } from "@/lib/password";
-import { Alert, Button, Card, Field, Input, cx } from "@/components/ui";
+import { Alert, Button, Card, Field, Input, cx } from "@/components/kit";
 
 export function SignupForm() {
   const [state, action, pending] = useActionState(signup, undefined);

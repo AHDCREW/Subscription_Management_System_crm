@@ -3,7 +3,7 @@ import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
 import { PERIOD_LABEL, PERIOD_UNIT, estimateRecurringTotal } from "@/lib/subscriptions/templates";
-import { Badge, ButtonLink, EmptyState, PageHeader, Table, Td, Th } from "@/components/ui";
+import { Badge, ButtonLink, EmptyState, PageHeader, Table, Td, Th } from "@/components/kit";
 
 export default async function TemplatesPage() {
   await requireTeam();

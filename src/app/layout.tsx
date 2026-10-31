@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,8 +10,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <body className="min-h-full bg-slate-50 text-slate-900">{children}</body>
+    <html lang="en" className={`${GeistSans.variable} h-full antialiased`}>
+      <body className="min-h-full bg-muted/40 font-sans text-foreground">
+        {children}
+        <Toaster richColors position="top-right" />
+      </body>
     </html>
   );
 }

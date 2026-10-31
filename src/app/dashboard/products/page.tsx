@@ -5,7 +5,7 @@ import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
 import { PRODUCTS_PAGE_SIZE, PRODUCT_TYPES, isProductType, productTypeInfo } from "@/lib/catalog/product-types";
-import { Badge, Button, ButtonLink, EmptyState, Input, PageHeader, Select, Table, Td, Th } from "@/components/ui";
+import { Badge, Button, ButtonLink, EmptyState, Input, PageHeader, Select, Table, Td, Th } from "@/components/kit";
 import { taxLabel } from "./tax-options";
 
 function first(value: string | string[] | undefined) {

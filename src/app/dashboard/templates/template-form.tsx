@@ -3,7 +3,7 @@
 import { startTransition, useActionState, useState, type FormEvent } from "react";
 import { saveTemplate } from "./actions";
 import type { PlanOption, ProductOption, TemplateFormValues } from "./data";
-import { Alert, Button, ButtonLink, Card, Field, Input, Select, Textarea, cx } from "@/components/ui";
+import { Alert, Button, ButtonLink, Card, Field, Input, Select, Textarea, cx } from "@/components/kit";
 import { formatMoney } from "@/lib/money";
 import { PERIOD_LABEL, PERIOD_UNIT, estimateRecurringTotal, lineAmount } from "@/lib/subscriptions/templates";
 
