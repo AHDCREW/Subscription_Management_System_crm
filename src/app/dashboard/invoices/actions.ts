@@ -3,17 +3,22 @@
 import { revalidatePath } from "next/cache";
 import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { runBilling, type BillingRunSummary } from "@/lib/billing/run";
+import type { BillingRunSummary } from "@/lib/billing/run";
+import { runAndRecordBilling } from "@/lib/jobs/billing-job";
 import { recordPayment } from "@/lib/billing/record-payment";
 import type { PaymentFieldErrors } from "@/lib/billing/payment";
 
-/** "Run billing now": invoices everything due up to today. Safe to press twice. */
-export async function runBillingNow(): Promise<BillingRunSummary> {
-  await requireTeam();
-  const summary = await runBilling({ today: new Date() });
+export type RunBillingNowResult = BillingRunSummary | { inProgress: true; message: string };
+
+/** "Run billing now": invoices everything due up to today. Safe to press twice; refused while another run is busy. */
+export async function runBillingNow(): Promise<RunBillingNowResult> {
+  const user = await requireTeam();
+  const result = await runAndRecordBilling({ trigger: "MANUAL", userId: user.id });
+  if (result.status !== "completed") return { inProgress: true, message: result.message };
   revalidatePath("/dashboard/invoices");
+  revalidatePath("/dashboard/billing-runs");
   revalidatePath("/dashboard");
-  return summary;
+  return result.summary;
 }
 
 export type InvoiceActionResult = { ok: true; message: string } | { ok: false; error: string };
