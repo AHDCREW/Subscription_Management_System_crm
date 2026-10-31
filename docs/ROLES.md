@@ -23,7 +23,7 @@ Hiding a button is never the only check. The server action behind it runs the sa
 | Products & variants | View · Create · Edit (incl. deactivate) · Delete variants | View | View active products on the public pricing page |
 | Plans | View · Create · Edit (incl. deactivate) · Delete unused plans | View | View active plans on the public pricing page |
 | Taxes | View · Create · Edit · Delete | — (can apply an active tax on a subscription line) | — |
-| Discounts | View · Create · Edit · Delete | — (can apply an active discount to a subscription) | — |
+| Discounts | View · Create · Edit · Delete | — (active rules apply on their own at billing: the run picks the one that saves the most) | — |
 | Quotation templates | View · Create · Edit · Delete | View · Create · Edit · Delete | — |
 | Subscriptions & quotations | View · Create · Edit · Approve (send quotation, confirm) · pause/resume/renew/close | Same as admin | View own (not drafts) · Edit own: pause, resume, renew, cancel when the plan allows it |
 | Customer approvals | View · Approve · Delete (reject a pending signup) | View · Approve · Delete (reject a pending signup) | — (signs up, then waits for approval) |
