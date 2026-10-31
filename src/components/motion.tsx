@@ -25,6 +25,15 @@ export function Stagger({ children, className, stagger = 0.06 }: { children: Rea
   );
 }
 
+// Like Stagger, but plays when the block scrolls into view. For long public pages.
+export function Reveal({ children, className, stagger = 0.08 }: { children: ReactNode; className?: string; stagger?: number }) {
+  return (
+    <AnimatedContent trigger="scroll" threshold={0.15} distance={20} duration={0.6} ease="power2.out" stagger={stagger} className={className}>
+      {children}
+    </AnimatedContent>
+  );
+}
+
 // Card for highlighted figures. `featured` is the dark hero card: use it for at most one figure per screen.
 export function GlowCard({ children, className, featured = false }: { children: ReactNode; className?: string; featured?: boolean }) {
   return (
