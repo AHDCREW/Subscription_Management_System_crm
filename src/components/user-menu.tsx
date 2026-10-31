@@ -15,7 +15,7 @@ export function UserMenu({ name, subtitle }: { name: string; subtitle: string })
   return (
     <div className="flex items-center gap-3">
       <Avatar className="size-9">
-        <AvatarFallback className="bg-primary/10 text-sm font-medium text-primary">{initials(name)}</AvatarFallback>
+        <AvatarFallback className="bg-primary text-xs font-medium text-primary-foreground">{initials(name)}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{name}</p>

@@ -8,9 +8,9 @@ Each colour has **one meaning** across the whole app. Use theme tokens only. Nev
 
 | Role | Token | Use for | Never for |
 |---|---|---|---|
-| **Primary** (ink) | `primary` | The main action on a screen, "Confirmed" | Decoration, categories, counts |
-| **Brand** (signal orange) | `brand` | Logo mark, active nav marker and icon, focus ring. Sparingly, a few pixels per screen | Buttons, text, status, backgrounds |
-| **Neutral** (warm paper) | `foreground`, `muted-foreground`, `muted`, `border` | Text, surfaces, dividers, drafts, categories | — |
+| **Primary** (near-black) | `primary` | The main action on a screen, "Confirmed", the one featured card | Decoration, categories, counts |
+| **Brand** (orange) | `brand` | Logo mark and focus ring only | Buttons, text, status, backgrounds |
+| **Neutral** (cool grey) | `canvas`, `sidebar`, `card`, `foreground`, `muted-foreground`, `muted`, `border` | Canvas, frame, panels, text, dividers, drafts, categories | — |
 | **Success** (green) | `success` | Active, paid, completed, "rule met" | Buttons |
 | **Info** (blue) | `info` | In progress, quotation sent | — |
 | **Warning** (amber) | `warning` | Needs attention soon: paused, expiring, inactive dependency | Errors |
@@ -18,7 +18,11 @@ Each colour has **one meaning** across the whole app. Use theme tokens only. Nev
 
 Surfaces use the token at low opacity (`bg-success/10 text-success`). Text uses the token directly.
 
-Palette is "ink & paper": warm off-white background, white cards, ink-black text and primary buttons, muted earthy status colours. **No gradients, glows, coloured shadows or purple/indigo tints.** Cards are flat (border, no shadow). Links are ink text with a quiet underline (`underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground`), not coloured text.
+**Layout:** grey `canvas` → a rounded light `sidebar` frame holding the left navigation → a white rounded content panel (`AppShell`). Every page starts with `PageHeader`, a bar across the top of the panel with the title on the left and actions on the right.
+
+**Surfaces:** cards are white, `rounded-xl`, 1px border and `shadow-xs`. Exactly one **featured** card per screen may use the dark near-black gradient (`StatCard featured`, the yearly plan on /pricing). No other gradients, glows or coloured shadows.
+
+**Badges** are white pills with a coloured status dot (`Badge tone`). **Tabs** are segmented pills: grey track, white active pill. **Tables** sit inside a card with a grey rounded header row. **Links** are ink text with a quiet underline.
 
 ### Status colours
 

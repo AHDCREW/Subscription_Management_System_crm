@@ -5,7 +5,7 @@ import { formatMoney } from "@/lib/money";
 import { productTypeInfo } from "@/lib/catalog/product-types";
 import { PERIOD_LABEL, PERIOD_UNIT } from "@/lib/subscriptions/templates";
 import { todayUtc } from "@/lib/subscriptions/subscriptions";
-import { Badge, ButtonLink, Card, EmptyState, SectionHeader } from "@/components/kit";
+import { Badge, ButtonLink, Card, EmptyState, SectionHeader, cx } from "@/components/kit";
 import { FadeIn, Stagger } from "@/components/motion";
 import BlurText from "@/components/reactbits/BlurText";
 
@@ -57,8 +57,9 @@ export default async function PricingPage() {
   const companyName = company?.name ?? "Brightloop Software";
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background animate-in fade-in slide-in-from-top-2 duration-500">
+    <div className="min-h-screen p-2.5">
+      <div className="flex min-h-[calc(100vh-1.25rem)] flex-col rounded-2xl border bg-card shadow-xs">
+      <header className="border-b animate-in fade-in slide-in-from-top-2 duration-500">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-3">
           <div>
             <p className="text-base font-semibold tracking-tight">{companyName}</p>
@@ -106,7 +107,7 @@ export default async function PricingPage() {
                   </div>
                   <p className="text-sm">
                     <span className="text-muted-foreground">from </span>
-                    <span className="text-lg font-semibold tabular-nums">{formatMoney(p.salesPrice)}</span>
+                    <span className="text-3xl font-semibold tracking-tight tabular-nums">{formatMoney(p.salesPrice)}</span>
                     <span className="text-muted-foreground"> / period</span>
                   </p>
                   {p.notes && <p className="truncate text-sm text-muted-foreground" title={p.notes}>{p.notes}</p>}
@@ -137,7 +138,14 @@ export default async function PricingPage() {
           ) : (
             <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {plans.map((plan) => (
-                <Card key={plan.id} className="flex flex-col gap-3">
+                <Card
+                  key={plan.id}
+                  className={cx(
+                    "flex flex-col gap-3",
+                    plan.billingPeriod === "YEARLY" &&
+                      "border-primary bg-[linear-gradient(160deg,oklch(0.33_0.006_286),oklch(0.17_0.006_286)_70%)] text-primary-foreground shadow-md [&_.text-muted-foreground]:text-primary-foreground/65 [&_.text-foreground]:text-primary-foreground [&_.border-t]:border-white/15",
+                  )}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="font-semibold">{plan.name}</h3>
                     <Badge tone="outline">{PERIOD_LABEL[plan.billingPeriod]}</Badge>
@@ -145,12 +153,12 @@ export default async function PricingPage() {
                   <p className="text-sm">
                     {Number(plan.price) > 0 ? (
                       <>
-                        <span className="text-lg font-semibold tabular-nums">{formatMoney(plan.price)}</span>
+                        <span className="text-3xl font-semibold tracking-tight tabular-nums">{formatMoney(plan.price)}</span>
                         <span className="text-muted-foreground"> / {PERIOD_UNIT[plan.billingPeriod]}</span>
                       </>
                     ) : (
                       <>
-                        <span className="text-lg font-semibold">No base fee</span>
+                        <span className="text-3xl font-semibold tracking-tight">No base fee</span>
                         <span className="text-muted-foreground"> · billed per {PERIOD_UNIT[plan.billingPeriod]}</span>
                       </>
                     )}
@@ -190,6 +198,7 @@ export default async function PricingPage() {
       <footer className="pb-8 text-center text-xs text-muted-foreground">
         {companyName} · Powered by SubFlow
       </footer>
+      </div>
     </div>
   );
 }

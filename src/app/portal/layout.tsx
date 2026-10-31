@@ -1,39 +1,40 @@
 import { requireCustomer } from "@/lib/auth";
-import { NavLink } from "@/components/nav-link";
-import { UserMenu } from "@/components/user-menu";
+import { db } from "@/lib/db";
+import { BrandMark } from "@/components/brand";
+import { AppShell } from "@/components/app-shell";
 
 export default async function PortalLayout({ children }: LayoutProps<"/portal">) {
   const user = await requireCustomer();
+  const company = await db.companySettings.findUnique({ where: { id: 1 }, select: { name: true } });
+  const companyName = company?.name ?? "Brightloop Software";
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="no-print sticky top-0 z-10 border-b bg-background animate-in fade-in slide-in-from-top-2 duration-500">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-3">
-          <div>
-            <p className="text-base font-semibold tracking-tight">Brightloop Software</p>
-            <p className="text-xs text-muted-foreground">Customer portal</p>
-          </div>
-          <nav className="flex items-center gap-1">
-            <NavLink href="/portal" exact icon="dashboard" variant="top">
-              Overview
-            </NavLink>
-            <NavLink href="/portal/subscriptions" icon="subscriptions" variant="top">
-              Subscriptions
-            </NavLink>
-            <NavLink href="/portal/invoices" icon="invoices" variant="top">
-              Invoices
-            </NavLink>
-            <NavLink href="/portal/profile" icon="profile" variant="top">
-              Profile
-            </NavLink>
-          </nav>
-          <div className="w-56">
-            <UserMenu name={user.name} subtitle={user.email} />
+    <AppShell
+      brand={
+        <div className="flex items-center gap-2.5">
+          <BrandMark>
+            <span className="text-sm font-semibold">{companyName.charAt(0).toUpperCase()}</span>
+          </BrandMark>
+          <div className="min-w-0 leading-tight">
+            <p className="truncate text-base font-semibold tracking-tight">{companyName}</p>
+            <p className="text-xs text-muted-foreground">Customer portal · Powered by SubFlow</p>
           </div>
         </div>
-      </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">{children}</main>
-      <footer className="no-print pb-8 text-center text-xs text-muted-foreground">Powered by SubFlow</footer>
-    </div>
+      }
+      sections={[
+        {
+          section: "Your account",
+          items: [
+            { href: "/portal", label: "Overview", icon: "dashboard", exact: true },
+            { href: "/portal/subscriptions", label: "Subscriptions", icon: "subscriptions" },
+            { href: "/portal/invoices", label: "Invoices", icon: "invoices" },
+          ],
+        },
+      ]}
+      footer={[{ href: "/portal/profile", label: "Profile", icon: "profile" }]}
+      user={{ name: user.name, subtitle: user.email }}
+    >
+      {children}
+    </AppShell>
   );
 }

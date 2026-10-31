@@ -25,9 +25,21 @@ export function Stagger({ children, className, stagger = 0.06 }: { children: Rea
   );
 }
 
-// A flat paper card for highlighted figures. (No coloured glow: it reads as decoration, not information.)
-export function GlowCard({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("rounded-lg border bg-card p-5", className)}>{children}</div>;
+// Card for highlighted figures. `featured` is the dark hero card: use it for at most one figure per screen.
+export function GlowCard({ children, className, featured = false }: { children: ReactNode; className?: string; featured?: boolean }) {
+  return (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-xl border p-5 shadow-xs",
+        featured
+          ? "border-primary bg-[linear-gradient(160deg,oklch(0.33_0.006_286),oklch(0.17_0.006_286)_70%)] text-primary-foreground shadow-md"
+          : "bg-card",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function StatCard({
@@ -38,6 +50,7 @@ export function StatCard({
   decimals = 0,
   hint,
   className,
+  featured = false,
 }: {
   label: string;
   value: number;
@@ -46,14 +59,15 @@ export function StatCard({
   decimals?: number;
   hint?: ReactNode;
   className?: string;
+  featured?: boolean;
 }) {
   return (
-    <GlowCard className={className}>
-      <p className="text-sm text-muted-foreground">{label}</p>
+    <GlowCard className={className} featured={featured}>
+      <p className={cn("text-sm", featured ? "text-primary-foreground/70" : "text-muted-foreground")}>{label}</p>
       <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums">
         <CountUp to={value} prefix={prefix} suffix={suffix} decimals={decimals} separator="," duration={1.2} trigger="load" />
       </p>
-      {hint && <div className="mt-1 text-xs text-muted-foreground">{hint}</div>}
+      {hint && <div className={cn("mt-1 text-xs", featured ? "text-primary-foreground/60" : "text-muted-foreground")}>{hint}</div>}
     </GlowCard>
   );
 }

@@ -1,13 +1,12 @@
 import type { Role } from "@prisma/client";
 import { requireTeam } from "@/lib/auth";
-import { NavLink } from "@/components/nav-link";
 import { Brand } from "@/components/brand";
-import { UserMenu } from "@/components/user-menu";
+import { AppShell, type ShellNavSection } from "@/components/app-shell";
 
 type NavItem = { href: string; label: string; icon: string; roles?: Role[]; exact?: boolean };
 
-const NAV: { section: string; items: NavItem[] }[] = [
-  { section: "Overview", items: [{ href: "/dashboard", label: "Dashboard", icon: "dashboard", exact: true }, { href: "/dashboard/reports", label: "Reports", icon: "reports" }] },
+const NAV: { section?: string; items: NavItem[] }[] = [
+  { items: [{ href: "/dashboard", label: "Dashboard", icon: "dashboard", exact: true }, { href: "/dashboard/reports", label: "Reports", icon: "reports" }] },
   {
     section: "Sales",
     items: [
@@ -32,47 +31,30 @@ const NAV: { section: string; items: NavItem[] }[] = [
       { href: "/dashboard/discounts", label: "Discounts", icon: "discounts", roles: ["ADMIN"] },
     ],
   },
-  {
-    section: "Admin",
-    items: [
-      { href: "/dashboard/users", label: "Users & staff", icon: "users", roles: ["ADMIN"] },
-      { href: "/dashboard/settings", label: "Company settings", icon: "settings", roles: ["ADMIN"] },
-    ],
-  },
+];
+
+const FOOTER: NavItem[] = [
+  { href: "/dashboard/users", label: "Users & staff", icon: "users", roles: ["ADMIN"] },
+  { href: "/dashboard/settings", label: "Settings", icon: "settings", roles: ["ADMIN"] },
 ];
 
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const user = await requireTeam();
+  const allowed = (item: NavItem) => !item.roles || item.roles.includes(user.role);
+  const strip = (item: NavItem) => ({ href: item.href, label: item.label, icon: item.icon, exact: item.exact });
+
+  const sections: ShellNavSection[] = NAV.map(({ section, items }) => ({ section, items: items.filter(allowed).map(strip) })).filter(
+    (s) => s.items.length > 0,
+  );
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="no-print sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r bg-sidebar animate-in fade-in slide-in-from-left-4 duration-500">
-        <div className="px-5 py-5">
-          <Brand subtitle="Brightloop Software" />
-        </div>
-        <nav className="flex-1 space-y-6 overflow-y-auto px-3 pb-4">
-          {NAV.map(({ section, items }) => {
-            const visible = items.filter((item) => !item.roles || item.roles.includes(user.role));
-            if (!visible.length) return null;
-            return (
-              <div key={section} className="space-y-0.5">
-                <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">{section}</p>
-                {visible.map((item) => (
-                  <NavLink key={item.href} href={item.href} exact={item.exact} icon={item.icon}>
-                    {item.label}
-                  </NavLink>
-                ))}
-              </div>
-            );
-          })}
-        </nav>
-        <div className="border-t p-4">
-          <UserMenu name={user.name} subtitle={user.role === "ADMIN" ? "Admin" : "Staff"} />
-        </div>
-      </aside>
-      <main className="flex-1 overflow-x-auto px-8 py-8">
-        <div className="mx-auto max-w-6xl">{children}</div>
-      </main>
-    </div>
+    <AppShell
+      brand={<Brand subtitle="Brightloop Software" />}
+      sections={sections}
+      footer={FOOTER.filter(allowed).map(strip)}
+      user={{ name: user.name, subtitle: user.role === "ADMIN" ? "Admin" : "Staff" }}
+    >
+      {children}
+    </AppShell>
   );
 }

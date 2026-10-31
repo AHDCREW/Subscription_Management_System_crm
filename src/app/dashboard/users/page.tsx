@@ -79,7 +79,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         {/* Link-based tabs: each role filter is its own URL, so it survives reloads and sharing. */}
-        <nav aria-label="Filter by role" className="inline-flex h-9 items-center rounded-lg bg-muted p-[3px] text-muted-foreground">
+        <nav aria-label="Filter by role" className="inline-flex h-10 items-center rounded-xl bg-muted p-1 text-muted-foreground">
           {tabs.map((tab) => {
             const active = tab.role === role;
             return (
@@ -89,9 +89,9 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
                 scroll={false}
                 aria-current={active ? "page" : undefined}
                 className={cx(
-                  "inline-flex h-full items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-all",
+                  "inline-flex h-full items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-all",
                   "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-                  active ? "bg-background text-foreground shadow-sm" : "text-foreground/60 hover:text-foreground",
+                  active ? "bg-card text-foreground shadow-xs ring-1 ring-border/60" : "text-foreground/60 hover:text-foreground",
                 )}
               >
                 {tab.label}
