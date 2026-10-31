@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { toast } from "sonner";
 import { Alert, Button, Card, Field, Input, SectionHeader, Textarea } from "@/components/kit";
-import { PasswordChecklist, passwordMeetsRules } from "@/app/(auth)/password-checklist";
+import { PASSWORD_RULES_ID, PasswordChecklist, passwordMeetsRules } from "@/app/(auth)/password-checklist";
 import {
   changePassword,
   saveDetails,
@@ -120,6 +120,7 @@ export function PasswordForm() {
             required
             aria-invalid={Boolean(errors.password)}
             value={password}
+            aria-describedby={PASSWORD_RULES_ID}
             onChange={(e) => setPassword(e.target.value)}
           />
         </Field>

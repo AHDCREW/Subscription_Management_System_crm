@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { signup } from "../actions";
-import { PasswordChecklist, passwordMeetsRules } from "../password-checklist";
+import { PASSWORD_RULES_ID, PasswordChecklist, passwordMeetsRules } from "../password-checklist";
 import { Alert, Button, Card, Field, Input } from "@/components/kit";
 
 export function SignupForm() {
@@ -28,6 +28,7 @@ export function SignupForm() {
             type="password"
             autoComplete="new-password"
             required
+            aria-describedby={PASSWORD_RULES_ID}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
