@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { signup } from "../actions";
-import { PASSWORD_RULES } from "@/lib/password";
-import { Alert, Button, Card, Field, Input, cx } from "@/components/kit";
+import { PasswordChecklist, passwordMeetsRules } from "../password-checklist";
+import { Alert, Button, Card, Field, Input } from "@/components/kit";
 
 export function SignupForm() {
   const [state, action, pending] = useActionState(signup, undefined);
   const [password, setPassword] = useState("");
-  const allMet = PASSWORD_RULES.every((rule) => rule.test(password));
+  const allMet = passwordMeetsRules(password);
 
   return (
     <Card>
@@ -32,17 +32,7 @@ export function SignupForm() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Field>
-        <ul className="space-y-1 text-xs">
-          {PASSWORD_RULES.map((rule) => {
-            const met = rule.test(password);
-            return (
-              <li key={rule.id} className={cx("flex items-center gap-2", met ? "text-emerald-600" : "text-slate-500")}>
-                <span aria-hidden>{met ? "✓" : "○"}</span>
-                {rule.label}
-              </li>
-            );
-          })}
-        </ul>
+        <PasswordChecklist password={password} />
         <Field label="Confirm password">
           <Input name="confirm" type="password" autoComplete="new-password" required />
         </Field>
