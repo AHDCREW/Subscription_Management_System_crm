@@ -6,6 +6,7 @@ import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
 import { PERIOD_UNIT } from "@/lib/subscriptions/templates";
+import { OPEN_REQUEST, isOpenRequest } from "@/lib/subscriptions/quote-requests";
 import {
   STATUS_INFO,
   SUBSCRIPTIONS_PAGE_SIZE,
@@ -15,7 +16,7 @@ import {
   subscriptionNumber,
   subscriptionTotals,
 } from "@/lib/subscriptions/subscriptions";
-import { Button, ButtonLink, EmptyState, Input, PageHeader, Table, Td, Th, cx } from "@/components/kit";
+import { Badge, Button, ButtonLink, EmptyState, Input, PageHeader, Table, Td, Th, cx } from "@/components/kit";
 import { StatusBadge } from "./status";
 
 const PAGE_SIZE = SUBSCRIPTIONS_PAGE_SIZE;
@@ -52,15 +53,19 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
 
   const params = await searchParams;
   const q = first(params.q).trim().slice(0, 120);
+  // ?view=requests lists the customers' quotation requests (Drafts from the portal) instead of a status.
+  const requestsOnly = first(params.view) === "requests";
   const statusParam = first(params.status).toUpperCase();
-  const status: SubscriptionStatus | undefined = isSubscriptionStatus(statusParam) ? statusParam : undefined;
+  const status: SubscriptionStatus | undefined =
+    !requestsOnly && isSubscriptionStatus(statusParam) ? statusParam : undefined;
   const requestedPage = Math.max(1, Number.parseInt(first(params.page), 10) || 1);
 
   const base = await searchWhere(q);
-  const where: Prisma.SubscriptionWhereInput = { ...base, ...(status && { status }) };
+  const where: Prisma.SubscriptionWhereInput = requestsOnly ? { ...base, ...OPEN_REQUEST } : { ...base, ...(status && { status }) };
 
-  const [counts, total] = await Promise.all([
+  const [counts, requestCount, total] = await Promise.all([
     db.subscription.groupBy({ by: ["status"], where: base, _count: { _all: true } }),
+    db.subscription.count({ where: { ...base, ...OPEN_REQUEST } }),
     db.subscription.count({ where }),
   ]);
   const countByStatus = new Map(counts.map((c) => [c.status, c._count._all]));
@@ -77,6 +82,7 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
       id: true,
       number: true,
       status: true,
+      requestedAt: true,
       startDate: true,
       expiryDate: true,
       nextInvoiceDate: true,
@@ -86,21 +92,26 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
     },
   });
 
-  const href = (next: { status?: SubscriptionStatus | null; page?: number }) => {
+  // A tab is a status, "requests" or null for All. Leaving it out keeps the current one.
+  type TabKey = SubscriptionStatus | "requests" | null;
+  const current: TabKey = requestsOnly ? "requests" : (status ?? null);
+  const href = (next: { tab?: TabKey; page?: number }) => {
     const sp = new URLSearchParams();
     if (q) sp.set("q", q);
-    const s = next.status === undefined ? status : next.status;
-    if (s) sp.set("status", s.toLowerCase());
+    const tab = next.tab === undefined ? current : next.tab;
+    if (tab === "requests") sp.set("view", "requests");
+    else if (tab) sp.set("status", tab.toLowerCase());
     if (next.page && next.page > 1) sp.set("page", String(next.page));
     const qs = sp.toString();
     return qs ? `/dashboard/subscriptions?${qs}` : "/dashboard/subscriptions";
   };
 
-  const tabs: { key: SubscriptionStatus | null; label: string; count: number }[] = [
+  const tabs: { key: TabKey; label: string; count: number }[] = [
     { key: null, label: "All", count: allCount },
+    { key: "requests", label: "Customer requests", count: requestCount },
     ...SUBSCRIPTION_STATUSES.map((s) => ({ key: s, label: STATUS_INFO[s].label, count: countByStatus.get(s) ?? 0 })),
   ];
-  const filtered = Boolean(q || status);
+  const filtered = Boolean(q || current);
 
   return (
     <>
@@ -116,11 +127,11 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
           className="inline-flex flex-wrap items-center gap-0.5 rounded-xl bg-muted p-1 text-sm animate-in fade-in duration-500"
         >
           {tabs.map((tab) => {
-            const active = (tab.key ?? null) === (status ?? null);
+            const active = tab.key === current;
             return (
               <Link
                 key={tab.label}
-                href={href({ status: tab.key, page: 1 })}
+                href={href({ tab: tab.key, page: 1 })}
                 aria-current={active ? "page" : undefined}
                 className={cx(
                   "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 font-medium text-foreground/60 transition-all hover:text-foreground",
@@ -138,6 +149,7 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
 
         <Form action="/dashboard/subscriptions" className="flex items-center gap-2">
           {status && <input type="hidden" name="status" value={status.toLowerCase()} />}
+          {requestsOnly && <input type="hidden" name="view" value="requests" />}
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <Input
@@ -163,9 +175,11 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
       {subscriptions.length === 0 ? (
         <EmptyState
           message={
-            filtered
-              ? "No subscriptions match your filters."
-              : "No subscriptions yet. Use “New subscription” to create one, from scratch or from a quotation template."
+            requestsOnly && !q
+              ? "No quotation requests waiting. Requests customers send from the portal show up here."
+              : filtered
+                ? "No subscriptions match your filters."
+                : "No subscriptions yet. Use “New subscription” to create one, from scratch or from a quotation template."
           }
         />
       ) : (
@@ -205,7 +219,10 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/da
                     </Td>
                     <Td>{sub.plan.name}</Td>
                     <Td>
-                      <StatusBadge status={sub.status} />
+                      <div className="flex flex-wrap gap-1.5">
+                        <StatusBadge status={sub.status} />
+                        {isOpenRequest(sub) && <Badge tone="amber">Customer request</Badge>}
+                      </div>
                     </Td>
                     <Td className="whitespace-nowrap tabular-nums">{formatDay(sub.startDate)}</Td>
                     <Td className="whitespace-nowrap tabular-nums">{formatDay(sub.expiryDate)}</Td>

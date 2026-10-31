@@ -3,7 +3,7 @@ import { requireCustomer } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { toUtcDate } from "@/lib/billing";
 import { formatDay } from "@/lib/subscriptions/subscriptions";
-import { EmptyState, PageHeader, SectionHeader } from "@/components/kit";
+import { ButtonLink, EmptyState, PageHeader, SectionHeader } from "@/components/kit";
 import { FadeIn, StatCard } from "@/components/motion";
 import { NO_SUBSCRIPTIONS, customerSubscriptionsWhere, getCustomerSubscriptions, getNextBill, recurringTotal } from "./subscriptions/data";
 import { SubscriptionsTable } from "./subscriptions/subscriptions-table";
@@ -68,7 +68,11 @@ export default async function PortalHome() {
           )
         }
       />
-      {recent.length === 0 ? <EmptyState message={NO_SUBSCRIPTIONS} /> : <SubscriptionsTable subscriptions={recent} />}
+      {recent.length === 0 ? (
+        <EmptyState message={NO_SUBSCRIPTIONS} action={<ButtonLink href="/portal/products/request">Request a quotation</ButtonLink>} />
+      ) : (
+        <SubscriptionsTable subscriptions={recent} />
+      )}
     </>
   );
 }

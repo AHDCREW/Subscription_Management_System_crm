@@ -2,14 +2,17 @@ import type { SubscriptionStatus } from "@prisma/client";
 import { Check, Pause } from "lucide-react";
 import { Badge, cx } from "@/components/kit";
 import { STATUS_INFO, STATUS_STEPS } from "@/lib/subscriptions/subscriptions";
+import { REQUESTED_STATUS } from "@/lib/subscriptions/quote-requests";
 
-export function StatusBadge({ status }: { status: SubscriptionStatus }) {
-  const info = STATUS_INFO[status];
+// `requested` shows a customer their own open request as "Requested" instead of "Draft".
+export function StatusBadge({ status, requested = false }: { status: SubscriptionStatus; requested?: boolean }) {
+  const info = requested && status === "DRAFT" ? REQUESTED_STATUS : STATUS_INFO[status];
   return <Badge tone={info.tone}>{info.label}</Badge>;
 }
 
-// Draft → Quotation → Confirmed → Active → Closed. Paused shows on the Active step.
-export function StatusStepper({ status }: { status: SubscriptionStatus }) {
+// Draft → Quotation → Confirmed → Active → Closed. Paused shows on the Active step,
+// and a customer's own request on the Draft step as "Requested".
+export function StatusStepper({ status, requested = false }: { status: SubscriptionStatus; requested?: boolean }) {
   const current = STATUS_STEPS.indexOf(status === "PAUSED" ? "ACTIVE" : status);
 
   return (
@@ -18,7 +21,11 @@ export function StatusStepper({ status }: { status: SubscriptionStatus }) {
         const done = index < current || (status === "CLOSED" && index === current);
         const isCurrent = index === current;
         const paused = isCurrent && status === "PAUSED";
-        const label = paused ? STATUS_INFO.PAUSED.label : STATUS_INFO[step].label;
+        const label = paused
+          ? STATUS_INFO.PAUSED.label
+          : requested && step === "DRAFT"
+            ? REQUESTED_STATUS.label
+            : STATUS_INFO[step].label;
         return (
           <li
             key={step}

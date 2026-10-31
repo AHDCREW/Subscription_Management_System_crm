@@ -2,6 +2,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { PENDING_CUSTOMERS } from "@/lib/account-approval";
+import { OPEN_REQUEST } from "@/lib/subscriptions/quote-requests";
 import { round2, toNumber } from "@/lib/money";
 import { addPeriod, monthlyRecurringValue, outstandingAmount, toUtcDate } from "@/lib/billing";
 import { subscriptionNumber } from "@/lib/subscriptions/subscriptions";
@@ -330,6 +331,8 @@ export async function getStaffQueue(now = new Date()) {
     currency,
     pendingCount,
     pending,
+    quoteRequestCount,
+    quoteRequests,
     quotationCount,
     quotations,
     draftCount,
@@ -348,6 +351,13 @@ export async function getStaffQueue(now = new Date()) {
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       take: QUEUE_SIZE,
       select: { id: true, name: true, email: true, company: true, createdAt: true },
+    }),
+    db.subscription.count({ where: OPEN_REQUEST }),
+    db.subscription.findMany({
+      where: OPEN_REQUEST,
+      orderBy: [{ requestedAt: "asc" }, { id: "asc" }],
+      take: QUEUE_SIZE,
+      select: { id: true, number: true, requestedAt: true, customer, plan: { select: { name: true } } },
     }),
     db.subscription.count({ where: { status: "QUOTATION" } }),
     db.subscription.findMany({
@@ -395,6 +405,7 @@ export async function getStaffQueue(now = new Date()) {
     today,
     currency,
     pendingCustomers: { count: pendingCount, rows: pending },
+    quoteRequests: { count: quoteRequestCount, rows: quoteRequests },
     quotations: { count: quotationCount, rows: quotations },
     draftInvoices: { count: draftCount, rows: drafts },
     overdueInvoices: { count: overdueCount, rows: overdueRows },

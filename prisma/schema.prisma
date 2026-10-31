@@ -254,6 +254,9 @@ model Subscription {
   paymentTermDays    Int                @default(0)
   quotationExpiresAt DateTime?
   notes              String?            @db.Text
+  // Set when the customer asked for this quotation from the portal. A Draft
+  // with this set is an open request until staff send it as a quotation.
+  requestedAt        DateTime?
   confirmedAt        DateTime?
   closedAt           DateTime?
   createdAt          DateTime           @default(now())
@@ -271,6 +274,8 @@ model Subscription {
   @@index([customerId])
   @@index([nextInvoiceDate])
   @@index([startDate])
+  // Open customer requests (status = DRAFT, requestedAt set) for the staff bubble and queue.
+  @@index([status, requestedAt])
 }
 
 model SubscriptionLine {

@@ -1,6 +1,7 @@
 import type { Role } from "@prisma/client";
 import { requireTeam } from "@/lib/auth";
 import { countPendingCustomers } from "@/lib/account-approval";
+import { getOpenRequestSummary } from "@/lib/subscriptions/open-requests";
 import { Brand } from "@/components/brand";
 import { AppShell, type ShellNavSection } from "@/components/app-shell";
 import { PendingRequestsWatcher } from "./pending-requests-watcher";
@@ -43,15 +44,20 @@ const FOOTER: NavItem[] = [
 
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const user = await requireTeam();
-  // Customer requests (signups waiting for approval) show as a bubble on Customers.
-  const pending = await countPendingCustomers();
+  // Customer requests show as bubbles: signups waiting for approval on Customers,
+  // quotation requests from the portal on Subscriptions.
+  const [pending, quoteRequests] = await Promise.all([countPendingCustomers(), getOpenRequestSummary()]);
+  const badges: Record<string, number> = {
+    "/dashboard/customers": pending,
+    "/dashboard/subscriptions": quoteRequests.count,
+  };
   const allowed = (item: NavItem) => !item.roles || item.roles.includes(user.role);
   const strip = (item: NavItem) => ({
     href: item.href,
     label: item.label,
     icon: item.icon,
     exact: item.exact,
-    badge: item.href === "/dashboard/customers" ? pending : undefined,
+    badge: badges[item.href],
   });
 
   const sections: ShellNavSection[] = NAV.map(({ section, items }) => ({ section, items: items.filter(allowed).map(strip) })).filter(
@@ -66,7 +72,11 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
       user={{ name: user.name, subtitle: user.role === "ADMIN" ? "Admin" : "Staff" }}
     >
       {children}
-      <PendingRequestsWatcher count={pending} />
+      <PendingRequestsWatcher
+        count={pending}
+        quoteRequests={quoteRequests.count}
+        latestQuoteRequestId={quoteRequests.latest?.id ?? 0}
+      />
     </AppShell>
   );
 }

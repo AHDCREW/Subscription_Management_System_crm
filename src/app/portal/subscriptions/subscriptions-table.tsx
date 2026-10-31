@@ -33,7 +33,7 @@ export function SubscriptionsTable({ subscriptions }: { subscriptions: CustomerS
             </Td>
             <Td>{sub.plan.name}</Td>
             <Td>
-              <StatusBadge status={sub.status} />
+              <StatusBadge status={sub.status} requested={sub.requestedAt !== null} />
             </Td>
             <Td className="tabular-nums">{formatDay(sub.startDate)}</Td>
             <Td className="tabular-nums">{sub.expiryDate ? formatDay(sub.expiryDate) : "Until closed"}</Td>
