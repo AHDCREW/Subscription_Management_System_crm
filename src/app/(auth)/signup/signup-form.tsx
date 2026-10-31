@@ -9,6 +9,8 @@ import { Alert, Button, Card, Field, Input } from "@/components/kit";
 export function SignupForm() {
   const [state, action, pending] = useActionState(signup, undefined);
   const [password, setPassword] = useState("");
+  // Both password fields are controlled so neither is cleared when the server returns an error.
+  const [confirm, setConfirm] = useState("");
   const allMet = passwordMeetsRules(password);
 
   return (
@@ -35,7 +37,14 @@ export function SignupForm() {
         </Field>
         <PasswordChecklist password={password} />
         <Field label="Confirm password">
-          <Input name="confirm" type="password" autoComplete="new-password" required />
+          <Input
+            name="confirm"
+            type="password"
+            autoComplete="new-password"
+            required
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
         </Field>
         <Button type="submit" className="w-full" disabled={pending || !allMet}>
           {pending ? "Creating account…" : "Sign up"}

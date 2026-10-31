@@ -134,7 +134,6 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
                 <Th className="text-right">Qty</Th>
                 <Th className="text-right">Unit price</Th>
                 <Th className="text-right">Discount</Th>
-                <Th className="text-right">Tax %</Th>
                 <Th className="text-right">Tax</Th>
                 <Th className="text-right">Amount</Th>
               </tr>
@@ -142,7 +141,7 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
             <tbody>
               {invoice.lines.length === 0 ? (
                 <tr>
-                  <Td colSpan={7} className="py-8 text-center text-muted-foreground">
+                  <Td colSpan={6} className="py-8 text-center text-muted-foreground">
                     This invoice has no lines.
                   </Td>
                 </tr>
@@ -161,8 +160,11 @@ export default async function InvoiceDetailPage({ params }: PageProps<"/dashboar
                       <Td className="text-right tabular-nums">
                         {discount > 0 ? `− ${money(discount)}` : <span className="text-muted-foreground">—</span>}
                       </Td>
-                      <Td className="text-right tabular-nums">{formatRate(toNumber(line.taxRate))}</Td>
-                      <Td className="text-right tabular-nums">{money(line.taxAmount)}</Td>
+                      {/* Rate under the amount keeps the table narrow enough for Amount to stay in view. */}
+                      <Td className="text-right tabular-nums">
+                        <div>{money(line.taxAmount)}</div>
+                        <div className="text-xs text-muted-foreground">{formatRate(toNumber(line.taxRate))}</div>
+                      </Td>
                       <Td className="text-right font-medium tabular-nums">{money(lineTotal)}</Td>
                     </tr>
                   );

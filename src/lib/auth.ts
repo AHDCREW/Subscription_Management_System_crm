@@ -74,7 +74,8 @@ export function isApproved(user: Pick<User, "role" | "approvedAt">) {
 export async function requireUser(roles?: Role[]): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (roles && !roles.includes(user.role)) redirect(homeFor(user.role));
+  // ?denied=1 lets the home page explain the redirect (see AccessDeniedNotice).
+  if (roles && !roles.includes(user.role)) redirect(`${homeFor(user.role)}?denied=1`);
   return user;
 }
 

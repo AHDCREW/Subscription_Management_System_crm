@@ -84,7 +84,7 @@ export default async function DiscountsPage() {
                   <Td>
                     <Badge tone={status.tone}>{status.label}</Badge>
                   </Td>
-                  <Td className="py-1.5">
+                  <Td className="sticky right-0 bg-card py-1.5 shadow-[-8px_0_8px_-8px_rgb(0_0_0/0.12)]">
                     <div className="flex items-center justify-end gap-1">
                       <ToggleDiscount discount={target} compact />
                       {deletable && <DeleteDiscount discount={target} compact />}
