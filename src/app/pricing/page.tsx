@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getCurrentUser, homeFor } from "@/lib/auth";
@@ -8,6 +9,7 @@ import { todayUtc } from "@/lib/subscriptions/subscriptions";
 import { Badge, ButtonLink, Card, EmptyState, SectionHeader, cx } from "@/components/kit";
 import { FadeIn, Stagger } from "@/components/motion";
 import BlurText from "@/components/reactbits/BlurText";
+import { Brand } from "@/components/brand";
 
 export const metadata: Metadata = { title: "Plans & pricing" };
 
@@ -61,10 +63,9 @@ export default async function PricingPage() {
       <div className="flex min-h-[calc(100vh-1.25rem)] flex-col rounded-2xl border bg-card shadow-xs">
       <header className="border-b animate-in fade-in slide-in-from-top-2 duration-500">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-3">
-          <div>
-            <p className="text-base font-semibold tracking-tight">{companyName}</p>
-            <p className="text-xs text-muted-foreground">Powered by ROOT</p>
-          </div>
+          <Link href="/" aria-label="Brightloop home">
+            <Brand subtitle="Plans & pricing" />
+          </Link>
           <nav className="flex items-center gap-2">
             {user ? (
               <ButtonLink href={homeFor(user.role)}>
@@ -196,7 +197,7 @@ export default async function PricingPage() {
       </main>
 
       <footer className="pb-8 text-center text-xs text-muted-foreground">
-        {companyName} · Powered by ROOT
+        {companyName} · Subscriptions, billing and payments in one place
       </footer>
       </div>
     </div>

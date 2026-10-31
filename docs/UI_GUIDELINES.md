@@ -1,4 +1,4 @@
-# SubFlow UI guidelines
+# Brightloop UI guidelines
 
 These rules apply to every screen. Build pages from `@/components/kit` (shadcn-based), `@/components/ui/*` and `@/components/motion` (React Bits).
 

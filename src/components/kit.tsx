@@ -10,7 +10,7 @@ import { Alert as UIAlert, AlertDescription } from "@/components/ui/alert";
 import { TableHead, TableCell } from "@/components/ui/table";
 import BlurText from "@/components/reactbits/BlurText";
 
-// ROOT's app kit: thin wrappers over shadcn/ui so every module shares one look.
+// Brightloop's app kit: thin wrappers over shadcn/ui so every module shares one look.
 // Pages import from here; reach for "@/components/ui/*" directly for anything richer.
 
 export const cx = cn;
