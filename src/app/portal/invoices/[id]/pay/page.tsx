@@ -36,7 +36,7 @@ export default async function PayInvoicePage({ params }: PageProps<"/portal/invo
       <CheckoutForm
         invoiceId={invoice.id}
         invoiceNumber={invoice.number}
-        companyName={company?.name ?? "SubFlow"}
+        companyName={company?.name ?? "ROOT"}
         amount={outstandingAmount(invoice.total, invoice.amountPaid)}
         customerName={user.name}
       />

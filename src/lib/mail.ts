@@ -39,7 +39,7 @@ export async function sendMail({ to, subject, text, html }: Mail) {
   }
 
   await getTransporter().sendMail({
-    from: process.env.SMTP_FROM || "SubFlow <no-reply@subflow.local>",
+    from: process.env.SMTP_FROM || "ROOT <no-reply@root.local>",
     to,
     subject,
     text,

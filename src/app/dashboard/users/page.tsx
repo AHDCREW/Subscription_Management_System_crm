@@ -75,7 +75,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/dashboard/
 
   return (
     <>
-      <PageHeader title="Users & staff" description="Everyone with a SubFlow account. Only admins can add staff." actions={<AddStaffDialog />} />
+      <PageHeader title="Users & staff" description="Everyone with a ROOT account. Only admins can add staff." actions={<AddStaffDialog />} />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         {/* Link-based tabs: each role filter is its own URL, so it survives reloads and sharing. */}
