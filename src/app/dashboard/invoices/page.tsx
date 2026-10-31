@@ -5,7 +5,7 @@ import { requireTeam } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDate, formatMoney, round2, toNumber } from "@/lib/money";
 import { isInvoiceOverdue, toUtcDate } from "@/lib/billing";
-import { getLastBillingRun } from "@/lib/billing/run";
+import { getLatestBillingRun } from "@/lib/jobs/billing-job";
 import { Button, ButtonLink, EmptyState, Input, PageHeader, Table, Td, Th } from "@/components/kit";
 import { StatCard } from "@/components/motion";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -70,7 +70,7 @@ export default async function InvoicesPage({ searchParams }: PageProps<"/dashboa
     filter === "overdue" ? overdueWhere : selected && "status" in selected ? { status: selected.status } : {};
   const where: Prisma.InvoiceWhereInput = { AND: [filterWhere, searchWhere] };
 
-  const [settings, draftCount, outstanding, overdue, paidThisMonth, statusCounts, overdueCount, total] =
+  const [settings, draftCount, outstanding, overdue, paidThisMonth, statusCounts, overdueCount, total, lastRun] =
     await Promise.all([
       db.companySettings.findUnique({ where: { id: 1 }, select: { currency: true } }),
       db.invoice.count({ where: { status: "DRAFT" } }),
@@ -80,6 +80,7 @@ export default async function InvoicesPage({ searchParams }: PageProps<"/dashboa
       db.invoice.groupBy({ by: ["status"], where: searchWhere, _count: { _all: true } }),
       db.invoice.count({ where: { AND: [overdueWhere, searchWhere] } }),
       db.invoice.count({ where }),
+      getLatestBillingRun(),
     ]);
 
   const currency = settings?.currency ?? "INR";
@@ -160,7 +161,7 @@ export default async function InvoicesPage({ searchParams }: PageProps<"/dashboa
         />
       </div>
 
-      <BillingRunPanel initial={getLastBillingRun()} draftCount={draftCount} />
+      <BillingRunPanel initial={lastRun} draftCount={draftCount} />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <Tabs value={filter}>

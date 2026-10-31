@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { CalendarClock, CheckCheck, Loader2, Play } from "lucide-react";
 import { toast } from "sonner";
 import type { BillingRunSummary } from "@/lib/billing/run";
+import type { LastBillingRun } from "@/lib/jobs/billing-job";
 import { Button } from "@/components/kit";
 import {
   Dialog,
@@ -80,14 +82,33 @@ function describe(summary: BillingRunSummary) {
   return parts.join(" · ");
 }
 
-export function RunBillingButton({ onDone }: { onDone?: (summary: BillingRunSummary) => void }) {
+/** A just-finished manual run in the shape the "last run" panel shows. */
+function toLastRun(summary: BillingRunSummary): LastBillingRun {
+  return {
+    trigger: "MANUAL",
+    today: summary.today,
+    finishedAt: summary.finishedAt,
+    activated: summary.activated,
+    invoicesCreated: summary.invoicesCreated,
+    skippedDuplicates: summary.skippedDuplicates,
+    closed: summary.closed,
+    errorCount: summary.errors.length,
+    errors: summary.errors.slice(0, 20).map(({ subscriptionNumber, message }) => ({ subscriptionNumber, message })),
+  };
+}
+
+export function RunBillingButton({ onDone }: { onDone?: (run: LastBillingRun) => void }) {
   const [pending, startTransition] = useTransition();
 
   function run() {
     startTransition(async () => {
       try {
         const summary = await runBillingNow();
-        onDone?.(summary);
+        if ("inProgress" in summary) {
+          toast.info("Billing is already running", { description: summary.message });
+          return;
+        }
+        onDone?.(toLastRun(summary));
         const text = describe(summary);
         if (summary.errors.length > 0) {
           toast.warning(`Billing run finished with ${summary.errors.length} error(s)`, { description: text });
@@ -120,7 +141,7 @@ function Metric({ label, value, tone }: { label: string; value: number; tone?: "
 }
 
 /** Header action plus the "last run" panel, sharing the latest result. */
-export function BillingRunPanel({ initial, draftCount }: { initial: BillingRunSummary | null; draftCount: number }) {
+export function BillingRunPanel({ initial, draftCount }: { initial: LastBillingRun | null; draftCount: number }) {
   const [summary, setSummary] = useState(initial);
 
   return (
@@ -134,7 +155,7 @@ export function BillingRunPanel({ initial, draftCount }: { initial: BillingRunSu
             <p className="text-sm font-medium">Billing run</p>
             <p className="text-xs text-muted-foreground">
               Activates confirmed subscriptions that have started and creates a draft invoice for every period due up to
-              today. Running it again never bills a period twice.
+              today. Runs automatically every day after 00:05; running it again never bills a period twice.
             </p>
           </div>
         </div>
@@ -147,27 +168,33 @@ export function BillingRunPanel({ initial, draftCount }: { initial: BillingRunSu
       {summary && (
         <div key={summary.finishedAt} className="mt-4 border-t pt-4 animate-in fade-in duration-500">
           <p className="mb-3 text-xs text-muted-foreground">
-            Last run{" "}
+            Last {summary.trigger === "SCHEDULED" ? "scheduled" : "manual"} run{" "}
             {new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(
               new Date(summary.finishedAt),
             )}{" "}
-            · billed up to {summary.today}
+            · billed up to {summary.today} ·{" "}
+            <Link
+              href="/dashboard/billing-runs"
+              className="text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground"
+            >
+              Run history
+            </Link>
           </p>
           <div className="flex flex-wrap gap-x-8 gap-y-3">
             <Metric label="Invoices created" value={summary.invoicesCreated} />
             <Metric label="Activated" value={summary.activated} />
             <Metric label="Already billed" value={summary.skippedDuplicates} />
             <Metric label="Auto-closed" value={summary.closed} />
-            <Metric label="Errors" value={summary.errors.length} tone="red" />
+            <Metric label="Errors" value={summary.errorCount} tone="red" />
           </div>
-          {summary.errors.length > 0 && (
+          {summary.errorCount > 0 && (
             <ul className="mt-3 space-y-1 text-xs text-destructive">
               {summary.errors.slice(0, 10).map((error, i) => (
-                <li key={`${error.subscriptionId}-${i}`}>
+                <li key={`${error.subscriptionNumber}-${i}`}>
                   {error.subscriptionNumber}: {error.message}
                 </li>
               ))}
-              {summary.errors.length > 10 && <li>…and {summary.errors.length - 10} more</li>}
+              {summary.errorCount > 10 && <li>…and {summary.errorCount - 10} more</li>}
             </ul>
           )}
         </div>

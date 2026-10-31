@@ -20,6 +20,7 @@ const NAV: { section: string; items: NavItem[] }[] = [
     items: [
       { href: "/dashboard/invoices", label: "Invoices", icon: "invoices" },
       { href: "/dashboard/payments", label: "Payments", icon: "payments" },
+      { href: "/dashboard/billing-runs", label: "Billing runs", icon: "billingRuns" },
     ],
   },
   {
