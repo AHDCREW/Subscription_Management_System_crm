@@ -19,7 +19,7 @@ export function LinkInvalid() {
         Request a new link
       </ButtonLink>
       <p className="text-sm text-muted-foreground">
-        <Link href="/login" className="text-primary hover:underline">
+        <Link href="/login" className="text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
           Back to log in
         </Link>
       </p>

@@ -5,10 +5,6 @@ import { FadeIn } from "@/components/motion";
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-12">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,color-mix(in_oklch,var(--primary)_14%,transparent),transparent)]"
-      />
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
         <Brand className="animate-in fade-in zoom-in-95 duration-500" />
         <BlurText

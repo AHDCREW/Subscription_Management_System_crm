@@ -41,7 +41,7 @@ export function SignupForm() {
         </Button>
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
+          <Link href="/login" className="text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
             Log in
           </Link>
         </p>

@@ -86,7 +86,7 @@ export function Checkbox({ label, className, ...props }: ComponentProps<"input">
 export function Card({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn("rounded-xl border bg-card p-6 text-card-foreground shadow-xs transition-shadow hover:shadow-sm", className)}
+      className={cn("rounded-lg border bg-card p-6 text-card-foreground", className)}
       {...props}
     />
   );
@@ -132,12 +132,12 @@ export function DetailItem({ label, children }: { label: string; children: React
 }
 
 // Colour roles (see docs/UI_GUIDELINES.md). Each tone has one meaning everywhere:
-// gray = draft/neutral, blue = in progress, indigo = confirmed/committed, green = success/active/paid,
+// gray = draft/neutral, blue = in progress, indigo (ink) = confirmed/committed, green = success/active/paid,
 // amber = needs attention, red = overdue/failed, outline = categories (not a status).
 const badgeTones = {
   gray: "bg-muted text-muted-foreground",
   blue: "bg-info/10 text-info",
-  indigo: "bg-primary/10 text-primary",
+  indigo: "bg-primary/8 text-primary ring-1 ring-inset ring-primary/15",
   green: "bg-success/10 text-success",
   amber: "bg-warning/10 text-warning",
   red: "bg-destructive/10 text-destructive",
@@ -156,7 +156,7 @@ export function Badge({ tone = "gray", children }: { tone?: BadgeTone; children:
 
 export function Table({ children }: { children: ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-xl border bg-card shadow-xs animate-in fade-in slide-in-from-bottom-1 duration-500">
+    <div className="overflow-hidden rounded-lg border bg-card animate-in fade-in slide-in-from-bottom-1 duration-500">
       <div className="overflow-x-auto">
         <table className="w-full caption-bottom text-sm">{children}</table>
       </div>
@@ -174,7 +174,7 @@ export function Td({ className, ...props }: ComponentProps<"td">) {
 
 export function EmptyState({ message, action }: { message: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed bg-card py-14 text-center text-sm text-muted-foreground animate-in fade-in zoom-in-95 duration-500">
+    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed bg-card py-14 text-center text-sm text-muted-foreground animate-in fade-in zoom-in-95 duration-500">
       <Inbox className="size-8 text-muted-foreground/60" aria-hidden />
       <p>{message}</p>
       {action}

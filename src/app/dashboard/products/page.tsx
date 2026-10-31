@@ -105,7 +105,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/dashboa
                 return (
                   <tr key={p.id} className="hover:bg-muted/50">
                     <Td>
-                      <Link href={`/dashboard/products/${p.id}`} className="font-medium text-primary hover:underline">
+                      <Link href={`/dashboard/products/${p.id}`} className="font-medium text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
                         {p.name}
                       </Link>
                     </Td>

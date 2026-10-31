@@ -23,7 +23,7 @@ export function LoginForm({ passwordReset = false }: { passwordReset?: boolean }
           <Input name="password" type="password" autoComplete="current-password" required />
         </Field>
         <div className="text-right text-sm">
-          <Link href="/forgot-password" className="text-primary hover:underline">
+          <Link href="/forgot-password" className="text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
             Forgot password?
           </Link>
         </div>
@@ -32,7 +32,7 @@ export function LoginForm({ passwordReset = false }: { passwordReset?: boolean }
         </Button>
         <p className="text-center text-sm text-muted-foreground">
           New here?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
+          <Link href="/signup" className="text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
             Create an account
           </Link>
         </p>

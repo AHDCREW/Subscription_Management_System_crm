@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 import FadeContent from "@/components/reactbits/FadeContent";
 import AnimatedContent from "@/components/reactbits/AnimatedContent";
-import SpotlightCard from "@/components/reactbits/SpotlightCard";
 import CountUp from "@/components/reactbits/CountUp";
 import { cn } from "@/lib/utils";
 
@@ -26,17 +25,9 @@ export function Stagger({ children, className, stagger = 0.06 }: { children: Rea
   );
 }
 
+// A flat paper card for highlighted figures. (No coloured glow: it reads as decoration, not information.)
 export function GlowCard({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <SpotlightCard
-      theme="light"
-      spotlightColor="rgba(99, 102, 241, 0.18)"
-      intensity={0.6}
-      className={cn("rounded-xl p-5", className)}
-    >
-      {children}
-    </SpotlightCard>
-  );
+  return <div className={cn("rounded-lg border bg-card p-5", className)}>{children}</div>;
 }
 
 export function StatCard({

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${GeistSans.variable} h-full antialiased`}>
-      <body className="min-h-full bg-muted/40 font-sans text-foreground">
+      <body className="min-h-full bg-background font-sans text-foreground">
         {children}
         <Toaster richColors position="top-right" />
       </body>

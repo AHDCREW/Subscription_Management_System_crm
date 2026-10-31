@@ -226,7 +226,7 @@ export default async function InvoicesPage({ searchParams }: PageProps<"/dashboa
                 return (
                   <tr key={invoice.id} className="transition-colors hover:bg-muted/40">
                     <Td>
-                      <Link href={`/dashboard/invoices/${invoice.id}`} className="font-medium text-primary hover:underline">
+                      <Link href={`/dashboard/invoices/${invoice.id}`} className="font-medium text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
                         {invoice.number}
                       </Link>
                     </Td>

@@ -137,7 +137,7 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
             <Detail label="Payment terms">{paymentTermsLabel(sub.paymentTermDays)}</Detail>
             <Detail label="Template">
               {sub.template ? (
-                <Link href={`/dashboard/templates/${sub.template.id}`} className="text-primary hover:underline">
+                <Link href={`/dashboard/templates/${sub.template.id}`} className="text-foreground underline decoration-foreground/25 underline-offset-4 hover:decoration-foreground">
                   {sub.template.name}
                 </Link>
               ) : (
