@@ -45,7 +45,8 @@ docker compose up -d          # MySQL 8 on localhost:3306 (container subflow-mys
 cp .env.example .env          # DATABASE_URL, APP_URL, optional SMTP settings
 npm install
 npx prisma migrate deploy     # create the tables
-npm run db:seed               # Brightloop demo data (about 2 seconds)
+npm run db:seed               # base data: company, one admin, one staff, catalog
+npm run db:seed:demo          # optional: ~300 demo customers and billing history (about 2 seconds)
 npm run dev                   # http://localhost:3000
 ```
 
@@ -53,22 +54,23 @@ To send real emails, set `SMTP_HOST` and the other SMTP values in `.env`. If you
 
 ## Demo logins
 
-Every demo account uses the password **`Demo@12345`**. For a guided walkthrough, see [docs/DEMO.md](docs/DEMO.md).
+The seed creates one admin and one staff member, both with the password **`Demo@12345`**. For a guided walkthrough, see [docs/DEMO.md](docs/DEMO.md).
 
 | Role | Email | Notes |
 |---|---|---|
-| Admin | `admin@brightloop.test` | Admin dashboard. Everything, including staff, catalog, discounts and settings |
-| Staff | `staff@brightloop.test` (also `priya@` and `rahul@brightloop.test`) | Staff dashboard. Day-to-day work: approvals, quotations, billing, payments |
-| Customer | `customer@brightloop.test` | Kiran Stores: an active monthly CRM (Odoo) with an unpaid invoice, a yearly Accounting Pro and an open quotation |
+| Admin | `admin@brightloop.test` | Admin dashboard. Everything, including staff, catalog, discounts and settings. Only the admin adds more staff, from the **Staff** page |
+| Staff | `staff@brightloop.test` | Staff dashboard. Day-to-day work: approvals, quotations, billing, payments |
 
-Two more customers, `farah@inkwellstudio.test` and `tenzin@himalayantrails.test`, have signed up but are still waiting for approval, so they can't log in until someone approves them under **Customers** in the dashboard.
+Customers sign up themselves from the landing page and log in once staff approve them under **Customers**.
 
 ### What the seed creates
 
-`prisma/seed.ts` creates the Brightloop company settings (GSTIN, INR, invoice prefix `INV`), GST 18% and GST 5%, the products and variants (Brightloop CRM ₹999 with Brand Odoo +560, Brightloop Accounting ₹1,499 with Edition Pro +500, Extra Storage, Priority Support, Extra User Seat), the plans (Monthly, Yearly, Weekly Trial, Team Seats with a minimum quantity of 5), two discounts and two quotation templates.
+`npm run db:seed` (`prisma/seed.ts`) creates the Brightloop company settings (GSTIN, INR, invoice prefix `INV`), the admin and staff accounts above, GST 18% and GST 5%, the products and variants (Brightloop CRM ₹999 with Brand Odoo +560, Brightloop Accounting ₹1,499 with Edition Pro +500, Extra Storage, Priority Support, Extra User Seat), the plans (Monthly, Yearly, Weekly Trial, Team Seats with a minimum quantity of 5), two discounts and two quotation templates. It creates no customers, subscriptions or invoices.
 
-It then adds the bulk data:
+`npm run db:seed:demo` adds demo data to show the app at scale:
 
+- The demo customer `customer@brightloop.test` (Kiran Stores) with an active monthly CRM, a yearly Accounting Pro and an open quotation
+- Two signups waiting for approval (`farah@inkwellstudio.test`, `tenzin@himalayantrails.test`)
 - About 300 Indian small-business customers
 - 2,223 subscriptions across every status, with start dates spread over the last 8 months
 - About 6,500 invoices
@@ -76,7 +78,7 @@ It then adds the bulk data:
 
 The invoices are worked out with the real billing engine (`calculateInvoice`, `duePeriods`, discount usage limits) in the order a daily billing run would have created them. So the totals, `Discount.usedCount` and `nextInvoiceDate` all agree, and running billing straight after seeding creates nothing new.
 
-Random data comes from a seeded generator, so every fresh database gets the same data. The seed is safe to run again: the base records are upserted, and the bulk data is skipped once there are 2,000 or more subscriptions.
+Random data comes from a seeded generator, so every fresh database gets the same data. Both commands are safe to run again: the base records are upserted, and the bulk data is skipped once there are 2,000 or more subscriptions.
 
 ## Project structure
 
