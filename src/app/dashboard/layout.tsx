@@ -35,7 +35,7 @@ const NAV: { section?: string; items: NavItem[] }[] = [
 ];
 
 const FOOTER: NavItem[] = [
-  { href: "/dashboard/users", label: "Users & staff", icon: "users", roles: ["ADMIN"] },
+  { href: "/dashboard/users", label: "Staff", icon: "users", roles: ["ADMIN"] },
   { href: "/dashboard/settings", label: "Settings", icon: "settings", roles: ["ADMIN"] },
 ];
 
