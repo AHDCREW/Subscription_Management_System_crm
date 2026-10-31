@@ -32,6 +32,18 @@ export function isEditableStatus(status: SubscriptionStatus): boolean {
   return EDITABLE_STATUSES.includes(status);
 }
 
+// Statuses a team member can close from. Active and Paused also need a closable plan.
+export const CLOSABLE_STATUSES: SubscriptionStatus[] = ["CONFIRMED", "ACTIVE", "PAUSED"];
+
+/** Whether a subscription in `status` on a plan with `planClosable` may be closed now. */
+export function canClose(status: SubscriptionStatus, planClosable: boolean): boolean {
+  if (status === "CONFIRMED") return true; // It never started, so the plan rule doesn't apply.
+  return CLOSABLE_STATUSES.includes(status) && planClosable;
+}
+
+// Validity given to a quotation that is sent without one (e.g. not from a template).
+export const QUOTATION_VALIDITY_DAYS = 30;
+
 export const SUBSCRIPTIONS_PAGE_SIZE = 25;
 
 // SUB-00001, SUB-00002, … derived from the auto-increment id, so it is unique
@@ -73,6 +85,11 @@ export function todayUtc(now = new Date()): Date {
 
 export function addDays(date: Date, days: number): Date {
   return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+}
+
+/** A quotation is valid through its expiry date and expires the day after. */
+export function isQuotationExpired(expiresAt: Date | null | undefined, today = todayUtc()): boolean {
+  return !!expiresAt && expiresAt.getTime() < today.getTime();
 }
 
 /** Format a stored calendar date without shifting it into the viewer's time zone. */

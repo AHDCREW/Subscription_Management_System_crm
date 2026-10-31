@@ -9,16 +9,17 @@ import { PERIOD_LABEL, PERIOD_UNIT } from "@/lib/subscriptions/templates";
 import {
   formatDay,
   isEditableStatus,
+  isQuotationExpired,
   lineSubtotal,
   lineTaxAmount,
   paymentTermsLabel,
   subscriptionTotals,
-  todayUtc,
 } from "@/lib/subscriptions/subscriptions";
 import { Badge, ButtonLink, Card, PageHeader, Table, Td, Th } from "@/components/kit";
 import { FadeIn, Stagger } from "@/components/motion";
 import { StatusBadge, StatusStepper } from "../status";
 import { taxLabel } from "../data";
+import { StatusActions } from "./status-actions";
 
 function parseId(raw: string) {
   const id = Number(raw);
@@ -57,7 +58,7 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
       createdAt: true,
       customer: { select: { name: true, email: true, company: true, phone: true } },
       salesperson: { select: { name: true } },
-      plan: { select: { name: true, price: true, billingPeriod: true } },
+      plan: { select: { name: true, price: true, billingPeriod: true, closable: true } },
       template: { select: { id: true, name: true } },
       lines: {
         orderBy: { id: "asc" },
@@ -75,7 +76,7 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
   if (!sub) notFound();
 
   const editable = isEditableStatus(sub.status);
-  const quoteExpired = editable && !!sub.quotationExpiresAt && sub.quotationExpiresAt < todayUtc();
+  const quoteExpired = sub.status === "QUOTATION" && isQuotationExpired(sub.quotationExpiresAt);
   const unit = PERIOD_UNIT[sub.plan.billingPeriod];
   const lines = sub.lines.map((line) => {
     const priced = { quantity: line.quantity, unitPrice: line.unitPrice, taxRate: line.tax?.rate };
@@ -100,7 +101,8 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
             <StatusBadge status={sub.status} />
             {quoteExpired && <Badge tone="amber">Quotation expired</Badge>}
             {editable && (
-              <ButtonLink href={`/dashboard/subscriptions/${sub.id}/edit`}>
+              // Secondary: the status action below is this page's primary.
+              <ButtonLink href={`/dashboard/subscriptions/${sub.id}/edit`} variant="secondary">
                 <Pencil className="size-4" aria-hidden /> Edit
               </ButtonLink>
             )}
@@ -111,6 +113,18 @@ export default async function SubscriptionPage({ params }: PageProps<"/dashboard
       <FadeIn>
         <Card className="mb-6">
           <StatusStepper status={sub.status} />
+          <div className="mt-6 border-t pt-4">
+            <StatusActions
+              id={sub.id}
+              number={sub.number}
+              status={sub.status}
+              closable={sub.plan.closable}
+              quoteExpired={quoteExpired}
+              quotationExpiresAt={formatDay(sub.quotationExpiresAt)}
+              startDate={formatDay(sub.startDate)}
+              closedAt={formatDay(sub.closedAt)}
+            />
+          </div>
         </Card>
       </FadeIn>
 
