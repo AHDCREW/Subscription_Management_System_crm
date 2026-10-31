@@ -8,7 +8,7 @@ export default async function PortalHome() {
     <>
       <PageHeader title={`Hello, ${user.name.split(" ")[0]}`} description="Your subscriptions and invoices." />
       <Card>
-        <p className="text-sm text-slate-500">Your subscriptions and invoices will appear here.</p>
+        <p className="text-sm text-muted-foreground">Your subscriptions and invoices will appear here.</p>
       </Card>
     </>
   );

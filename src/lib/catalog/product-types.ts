@@ -4,9 +4,9 @@ import type { BadgeTone } from "@/components/kit";
 // Client-safe product labels (no zod / server code), used by lists, badges and forms.
 
 export const PRODUCT_TYPES: { value: ProductType; label: string; tone: BadgeTone }[] = [
-  { value: "SOFTWARE", label: "Software", tone: "indigo" },
-  { value: "ADDON", label: "Add-on", tone: "blue" },
-  { value: "SERVICE", label: "Service", tone: "amber" },
+  { value: "SOFTWARE", label: "Software", tone: "outline" },
+  { value: "ADDON", label: "Add-on", tone: "outline" },
+  { value: "SERVICE", label: "Service", tone: "outline" },
 ];
 
 export function productTypeInfo(type: ProductType) {

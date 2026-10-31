@@ -18,8 +18,8 @@ export function LinkInvalid() {
       <ButtonLink href="/forgot-password" className="w-full">
         Request a new link
       </ButtonLink>
-      <p className="text-sm text-slate-500">
-        <Link href="/login" className="text-indigo-600 hover:underline">
+      <p className="text-sm text-muted-foreground">
+        <Link href="/login" className="text-primary hover:underline">
           Back to log in
         </Link>
       </p>

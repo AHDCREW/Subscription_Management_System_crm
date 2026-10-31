@@ -65,7 +65,7 @@ export default async function ProductPage({ params }: PageProps<"/dashboard/prod
       />
 
       {!product.active && (
-        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <p className="rounded-md bg-warning/10 px-3 py-2 text-sm text-warning">
           This product is inactive. It stays on existing subscriptions and invoices but can&apos;t be added to new ones.
         </p>
       )}
@@ -119,8 +119,8 @@ export default async function ProductPage({ params }: PageProps<"/dashboard/prod
 function Detail({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="mt-1 text-slate-900">{children}</dd>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="mt-1 text-foreground">{children}</dd>
     </div>
   );
 }

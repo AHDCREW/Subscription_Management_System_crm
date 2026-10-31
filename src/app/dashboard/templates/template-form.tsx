@@ -98,7 +98,7 @@ export function TemplateForm({
       {state?.error && <Alert>{state.error}</Alert>}
 
       <Card className="space-y-4">
-        <h2 className="text-base font-semibold text-slate-900">Details</h2>
+        <h2 className="text-base font-semibold text-foreground">Details</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Name" error={fieldErrors.name}>
             <Input
@@ -154,8 +154,8 @@ export function TemplateForm({
       <Card className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">Product lines</h2>
-            <p className="text-sm text-slate-500">Prices are per billing period and exclude tax.</p>
+            <h2 className="text-base font-semibold text-foreground">Product lines</h2>
+            <p className="text-xs text-muted-foreground">Prices are per billing period and exclude tax.</p>
           </div>
           <Button type="button" variant="secondary" onClick={addRow} disabled={products.length === 0}>
             + Add line
@@ -165,12 +165,12 @@ export function TemplateForm({
         {fieldErrors.lines && <Alert>{fieldErrors.lines}</Alert>}
 
         {rows.length === 0 ? (
-          <p className="rounded-md border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500">
+          <p className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
             No product lines yet. Use “Add line” to add the products this template should include.
           </p>
         ) : (
           <div className="space-y-3">
-            <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,2fr)_6rem_8rem_auto] gap-3 px-1 text-xs font-medium uppercase tracking-wide text-slate-500 md:grid">
+            <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,2fr)_6rem_8rem_auto] gap-3 px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
               <span>Product</span>
               <span>Variant</span>
               <span>Quantity</span>
@@ -195,7 +195,7 @@ export function TemplateForm({
                   <div
                     className={cx(
                       "grid gap-3 rounded-md p-1 md:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_6rem_8rem_auto] md:items-center",
-                      error && "bg-rose-50/60 ring-1 ring-rose-200",
+                      error && "bg-destructive/5 ring-1 ring-destructive/30",
                     )}
                   >
                     <Select
@@ -244,7 +244,7 @@ export function TemplateForm({
                       value={row.quantity}
                       onChange={(e) => updateRow(row.key, { quantity: e.target.value })}
                     />
-                    <span className="text-right text-sm tabular-nums text-slate-700">
+                    <span className="text-right text-sm tabular-nums text-foreground">
                       {amount === null ? "—" : formatMoney(amount)}
                     </span>
                     <Button
@@ -257,27 +257,27 @@ export function TemplateForm({
                       Remove
                     </Button>
                   </div>
-                  {error && <p className="px-1 text-xs text-rose-600">{error}</p>}
+                  {error && <p className="px-1 text-xs text-destructive">{error}</p>}
                 </div>
               );
             })}
           </div>
         )}
 
-        <dl className="ml-auto max-w-xs space-y-1 border-t border-slate-200 pt-4 text-sm">
-          <div className="flex justify-between gap-4 text-slate-600">
+        <dl className="ml-auto max-w-xs space-y-1 border-t border-border pt-4 text-sm">
+          <div className="flex justify-between gap-4 text-muted-foreground">
             <dt>Plan base fee</dt>
             <dd className="tabular-nums">{plan ? formatMoney(plan.price) : "—"}</dd>
           </div>
-          <div className="flex justify-between gap-4 text-slate-600">
+          <div className="flex justify-between gap-4 text-muted-foreground">
             <dt>Products</dt>
             <dd className="tabular-nums">{formatMoney(productsTotal)}</dd>
           </div>
-          <div className="flex justify-between gap-4 font-semibold text-slate-900">
+          <div className="flex justify-between gap-4 font-semibold text-foreground">
             <dt>Estimated total{plan ? ` / ${PERIOD_UNIT[plan.billingPeriod]}` : ""}</dt>
             <dd className="tabular-nums">{formatMoney(total)}</dd>
           </div>
-          <p className="pt-1 text-xs text-slate-500">Before tax and discounts.</p>
+          <p className="pt-1 text-xs text-muted-foreground">Before tax and discounts.</p>
         </dl>
       </Card>
 

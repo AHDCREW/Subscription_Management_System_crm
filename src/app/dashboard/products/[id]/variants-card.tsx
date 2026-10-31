@@ -61,14 +61,14 @@ export function VariantsCard({
             <h2 className="flex items-center gap-2 text-base font-semibold">
               <Layers className="size-4 text-muted-foreground" aria-hidden />
               Variants
-              {variants.length > 0 && <Badge tone="indigo">{variants.length}</Badge>}
+              {variants.length > 0 && <Badge>{variants.length}</Badge>}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Line price = sales price ({formatMoney(salesPrice)}) + the variant&apos;s extra price.
             </p>
           </div>
           {isAdmin && (
-            <Button type="button" onClick={() => setDialog({ mode: "add" })}>
+            <Button type="button" variant="secondary" onClick={() => setDialog({ mode: "add" })}>
               <Plus aria-hidden />
               Add variant
             </Button>

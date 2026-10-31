@@ -23,16 +23,16 @@ export function LoginForm({ passwordReset = false }: { passwordReset?: boolean }
           <Input name="password" type="password" autoComplete="current-password" required />
         </Field>
         <div className="text-right text-sm">
-          <Link href="/forgot-password" className="text-indigo-600 hover:underline">
+          <Link href="/forgot-password" className="text-primary hover:underline">
             Forgot password?
           </Link>
         </div>
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? "Logging in…" : "Log in"}
         </Button>
-        <p className="text-center text-sm text-slate-500">
+        <p className="text-center text-sm text-muted-foreground">
           New here?{" "}
-          <Link href="/signup" className="text-indigo-600 hover:underline">
+          <Link href="/signup" className="text-primary hover:underline">
             Create an account
           </Link>
         </p>

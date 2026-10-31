@@ -39,9 +39,9 @@ export function SignupForm() {
         <Button type="submit" className="w-full" disabled={pending || !allMet}>
           {pending ? "Creating account…" : "Sign up"}
         </Button>
-        <p className="text-center text-sm text-slate-500">
+        <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-indigo-600 hover:underline">
+          <Link href="/login" className="text-primary hover:underline">
             Log in
           </Link>
         </p>

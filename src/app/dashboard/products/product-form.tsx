@@ -79,7 +79,7 @@ export function ProductForm({
 
         <Checkbox name="active" label="Active (can be added to new subscriptions)" defaultChecked={values.active} />
 
-        <div className="flex gap-2 border-t border-slate-100 pt-5">
+        <div className="flex gap-2 border-t border-border pt-5">
           <Button type="submit" disabled={pending}>
             {pending ? "Saving…" : productId ? "Save changes" : "Create product"}
           </Button>

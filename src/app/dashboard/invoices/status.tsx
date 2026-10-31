@@ -3,9 +3,9 @@ import { Badge, type BadgeTone } from "@/components/kit";
 
 const STATUS: Record<InvoiceStatus, { label: string; tone: BadgeTone }> = {
   DRAFT: { label: "Draft", tone: "gray" },
-  CONFIRMED: { label: "Confirmed", tone: "blue" },
+  CONFIRMED: { label: "Confirmed", tone: "indigo" },
   PAID: { label: "Paid", tone: "green" },
-  CANCELLED: { label: "Cancelled", tone: "red" },
+  CANCELLED: { label: "Cancelled", tone: "gray" },
 };
 
 export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
@@ -14,5 +14,5 @@ export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
 }
 
 export function OverdueBadge() {
-  return <Badge tone="amber">Overdue</Badge>;
+  return <Badge tone="red">Overdue</Badge>;
 }
