@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { resetPassword } from "../actions";
-import { PasswordChecklist, passwordMeetsRules } from "../password-checklist";
+import { PASSWORD_RULES_ID, PasswordChecklist, passwordMeetsRules } from "../password-checklist";
 import { LinkInvalid } from "./link-invalid";
 import { Alert, Button, Card, Field, Input } from "@/components/kit";
 
@@ -33,6 +33,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             autoComplete="new-password"
             required
             autoFocus
+            aria-describedby={PASSWORD_RULES_ID}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
