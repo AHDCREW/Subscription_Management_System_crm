@@ -206,7 +206,7 @@ export function InvoiceDocument({
         </div>
 
         <footer className="mt-12 text-center text-xs text-muted-foreground">
-          Thank you for your business · Powered by ROOT
+          Thank you for your business
         </footer>
       </article>
     </>

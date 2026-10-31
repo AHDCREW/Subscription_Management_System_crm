@@ -22,9 +22,9 @@ import { formatMoney } from "@/lib/money";
 import { PERIOD_LABEL, PERIOD_UNIT } from "@/lib/subscriptions/templates";
 import { todayUtc } from "@/lib/subscriptions/subscriptions";
 import { Badge, ButtonLink, cx } from "@/components/kit";
-import { Brand, RootSymbol, RootWordmark } from "@/components/brand";
+import { Brand, BrightloopMark } from "@/components/brand";
 import { FadeIn, Reveal } from "@/components/motion";
-import { CircuitPattern } from "./_landing/circuit-pattern";
+import { LoopPattern } from "./_landing/loop-pattern";
 
 const NAV = [
   { href: "#how-it-works", label: "How it works" },
@@ -130,7 +130,7 @@ export default async function Home() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
-          <Link href="/" aria-label="ROOT home" className="rounded-md focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
+          <Link href="/" aria-label="Brightloop home" className="rounded-md focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
             <Brand />
           </Link>
           <nav aria-label="Sections" className="hidden items-center gap-1 md:flex">
@@ -168,7 +168,7 @@ export default async function Home() {
             aria-hidden
             className="absolute inset-0 -z-10 bg-[radial-gradient(55%_70%_at_10%_105%,rgb(251_177_48/0.22),transparent_70%),radial-gradient(45%_60%_at_95%_-5%,rgb(113_75_103/0.14),transparent_70%)]"
           />
-          <CircuitPattern className="-z-10 text-plum/10" />
+          <LoopPattern className="-z-10 text-plum/10" />
           <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 lg:grid-cols-[1.05fr_1fr] lg:py-28">
             <FadeIn>
               <p className="inline-flex items-center gap-2 rounded-full border border-plum/20 bg-plum/5 px-3 py-1 text-xs font-medium text-plum">
@@ -401,8 +401,8 @@ export default async function Home() {
               aria-hidden
               className="absolute inset-0 -z-10 bg-[radial-gradient(50%_90%_at_50%_120%,rgb(251_177_48/0.35),transparent_70%)]"
             />
-            <CircuitPattern className="-z-10 text-white/10" />
-            <RootSymbol variant="reversed" className="mx-auto size-14" />
+            <LoopPattern className="-z-10 text-white/10" />
+            <BrightloopMark variant="reversed" className="mx-auto size-14" />
             <h2 className="mx-auto mt-6 max-w-3xl font-display text-5xl leading-none font-bold text-balance sm:text-6xl">
               Ready to get started with {companyName}?
             </h2>
@@ -436,10 +436,8 @@ export default async function Home() {
       <footer className="border-t">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-3">
-            <RootSymbol className="size-6" />
-            <span>
-              {companyName} · Powered by <RootWordmark className="inline h-2.5 w-auto -translate-y-px text-primary" />
-            </span>
+            <BrightloopMark className="size-6" />
+            <span>{companyName} · Subscriptions, billing and payments in one place</span>
           </div>
           <nav aria-label="Footer" className="flex gap-5">
             <Link href="/pricing" className="hover:text-foreground">
@@ -497,7 +495,7 @@ function PortalPreview({ productName, price, companyName }: { productName: strin
       <div className="rounded-2xl border bg-white p-5 text-foreground shadow-2xl shadow-plum/20">
         <div className="flex items-center justify-between border-b pb-4">
           <div className="flex items-center gap-2.5">
-            <RootSymbol className="size-7" />
+            <BrightloopMark className="size-7" />
             <div className="leading-tight">
               <p className="text-sm font-semibold">{companyName}</p>
               <p className="text-xs text-muted-foreground">Customer portal</p>

@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "sw
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "ROOT · Where subscriptions grow", template: "%s · ROOT" },
+  title: { default: "Brightloop · Subscriptions, billing and payments", template: "%s · Brightloop" },
   description: "Subscription management: plans, subscriptions, recurring billing and payments in one place.",
 };
 

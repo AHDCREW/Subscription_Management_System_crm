@@ -1,12 +1,12 @@
-# SubFlow
+# Brightloop
 
-SubFlow is a subscription management system for **Brightloop Software**, built for the Odoo hackathon brief *Subscription Management System*. It replaces Brightloop's spreadsheet with one app for products, plans, quotations, subscriptions, recurring invoices, payments and revenue reporting. It has a team dashboard for admins and staff and a self-service portal for customers.
+Brightloop is the subscription management system for **Brightloop Software**, built for the Odoo hackathon brief *Subscription Management System*. It replaces Brightloop's spreadsheet with one app for products, plans, quotations, subscriptions, recurring invoices, payments and revenue reporting. It has a team dashboard for admins and staff and a self-service portal for customers.
 
 There are no third-party APIs. Auth, billing, taxes and discounts are all our own code. Payments are recorded by the team (no payment gateway needed), and emails go through SMTP when it is configured or are printed to the server console when it isn't.
 
 ## Features by scene
 
-| Scene from the brief | What SubFlow does |
+| Scene from the brief | What Brightloop does |
 |---|---|
 | **1. A new customer signs up** | Sign up, log in and log out. One account per email. Passwords need more than 8 characters, an uppercase letter, a lowercase letter and a special character, with a live checklist on the form and the same check on the server. Passwords are stored as bcrypt hashes. Sessions use an httpOnly cookie, and only the SHA-256 hash of the session id is stored in MySQL. Forgot password sends a single-use reset link that expires in 30 minutes. There are three roles (Admin, Staff, Customer), and only the admin can add staff. Customers can sign up themselves, but they can't log in until an admin or staff member approves the account on the Customers page (they get an email when it's approved), and only admins and staff can bill customers. |
 | **2. Launching a new plan** | Products (Software / Add-on / Service) with sales price, cost price and default tax. Variants add an extra price, e.g. Brand = Odoo adds ₹560. Plans have a daily, weekly, monthly or yearly period, a minimum quantity, availability dates, and options for auto-close, close early, pause and renew. |

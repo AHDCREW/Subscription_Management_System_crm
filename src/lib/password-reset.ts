@@ -27,15 +27,15 @@ export async function sendPasswordResetLink(user: { id: number; name: string; em
   const link = appUrl(`/reset-password?token=${token}`);
   await sendMail({
     to: user.email,
-    subject: "Reset your ROOT password",
+    subject: "Reset your Brightloop password",
     text:
       `Hi ${user.name},\n\n` +
-      `We received a request to reset your ROOT password. Open this link to choose a new one:\n\n${link}\n\n` +
+      `We received a request to reset your Brightloop password. Open this link to choose a new one:\n\n${link}\n\n` +
       `The link expires in ${RESET_MINUTES} minutes and can be used once. ` +
       `If you didn't ask for this, you can ignore this email.`,
     html:
       `<p>Hi ${escapeHtml(user.name)},</p>` +
-      `<p>We received a request to reset your ROOT password.</p>` +
+      `<p>We received a request to reset your Brightloop password.</p>` +
       `<p><a href="${link}">Choose a new password</a></p>` +
       `<p>The link expires in ${RESET_MINUTES} minutes and can be used once. ` +
       `If you didn't ask for this, you can ignore this email.</p>`,

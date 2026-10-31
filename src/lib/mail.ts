@@ -44,7 +44,7 @@ export async function sendMail({ to, subject, text, html }: Mail) {
   }
 
   await getTransporter().sendMail({
-    from: process.env.SMTP_FROM || "ROOT <no-reply@root.local>",
+    from: process.env.SMTP_FROM || "Brightloop <no-reply@brightloop.local>",
     to,
     subject,
     text,
